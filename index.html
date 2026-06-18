@@ -881,7 +881,7 @@
                 feature: layer.feature,
                 variables: {}
             };
-            layer.bindTooltip((layer.feature.properties['Road_Label'] !== null?String('<div style="color: #323232; font-size: 7pt; font-weight: bold; font-family: \'Open Sans\', sans-serif;">' + layer.feature.properties['Road_Label']) + '</div>':''), {permanent: true, direction: 'center', offset: [0, 0], className: 'css_Roads_11'});
+            layer.bindTooltip((layer.feature.properties['Road_Label'] !== null?String('<div style="color: #323232; font-size: 7pt; font-weight: bold; font-family: \'Open Sans\', sans-serif;">' + layer.feature.properties['Road_Label']) + '</div>':''), {permanent: true, direction: 'center', offset: [0, 4], className: 'css_Roads_11'});
             labels.push(layer);
             totalMarkers += 1;
               layer.added = true;
