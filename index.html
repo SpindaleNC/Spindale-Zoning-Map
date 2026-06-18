@@ -728,6 +728,26 @@
         });
         bounds_group.addLayer(layer_Roads_11);
         map.addLayer(layer_Roads_11);
+layer_Roads_11.eachLayer(function(layer) {
+    if (layer.feature && layer.feature.properties && layer.feature.properties['Road_Label']) {
+        layer.setText(layer.feature.properties['Road_Label'], {
+            repeat: false,
+            center: true,
+            below: false,
+            offset: 5,
+            attributes: {
+                'font-size': '10px',
+                'font-family': 'Arial',
+                'font-weight': 'normal',
+                'fill': '#333',
+                'stroke': '#ffffff',
+                'stroke-width': '2',
+                'paint-order': 'stroke'
+            }
+        });
+    }
+});
+			
         function pop_Parcels_12(feature, layer) {
             layer.on({
                 mouseout: function(e) {
