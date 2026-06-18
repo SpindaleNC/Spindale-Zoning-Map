@@ -28,7 +28,6 @@
         </div>
         <script src="js/qgis2web_expressions.js"></script>
         <script src="js/leaflet.js"></script>
-		<script src="https://cdn.jsdelivr.net/npm/leaflet-textpath@1.2.3/leaflet.textpath.js"></script>
         <script src="js/L.Control.Layers.Tree.min.js"></script>
         <script src="js/multi-style-layer.js"></script>
         <script src="js/leaflet.rotatedMarker.js"></script>
@@ -728,49 +727,6 @@
         });
         bounds_group.addLayer(layer_Roads_11);
         map.addLayer(layer_Roads_11);
-		function getRoadOrientation(layer) {
-    var latlngs = layer.getLatLngs();
-
-    if (!latlngs || latlngs.length < 2) {
-        return 0;
-    }
-
-    // Handle multipart/polyline nesting
-    if (Array.isArray(latlngs[0])) {
-        latlngs = latlngs[0];
-    }
-
-    var start = latlngs[0];
-    var end = latlngs[latlngs.length - 1];
-
-    // If the line runs right-to-left on the screen, flip the text
-    if (start.lng > end.lng) {
-        return 'flip';
-    }
-
-    return 0;
-}	
-layer_Roads_11.eachLayer(function(layer) {
-    if (layer.feature && layer.feature.properties && layer.feature.properties['Road_Label']) {
-        layer.setText(layer.feature.properties['Road_Label'], {
-            repeat: false,
-            center: true,
-            below: false,
-            offset: 5,
-			orientation: getRoadOrientation(layer),
-            attributes: {
-                'font-size': '10px',
-                'font-family': 'Arial',
-                'font-weight': 'normal',
-                'fill': '#333',
-                'stroke': '#ffffff',
-                'stroke-width': '2',
-                'paint-order': 'stroke'
-            }
-        });
-    }
-});
-			
         function pop_Parcels_12(feature, layer) {
             layer.on({
                 mouseout: function(e) {
@@ -925,10 +881,8 @@ layer_Roads_11.eachLayer(function(layer) {
                 feature: layer.feature,
                 variables: {}
             };
-            /*
-layer.bindTooltip((layer.feature.properties['Road_Label'] !== null?String('<div style="color: #000000; font-size: 8pt; font-family: \'Open Sans\', sans-serif;">' + layer.feature.properties['Road_Label']) + '</div>':''), {permanent: true, offset: [-0, -16], className: 'css_Roads_11'});
-*/
-			labels.push(layer);
+            layer.bindTooltip((layer.feature.properties['Road_Label'] !== null?String('<div style="color: #323232; font-size: 7pt; font-weight: bold; font-family: \'Open Sans\', sans-serif;">' + layer.feature.properties['Road_Label']) + '</div>':''), {permanent: true, offset: [-0, -16], className: 'css_Roads_11'});
+            labels.push(layer);
             totalMarkers += 1;
               layer.added = true;
               addLabel(layer, i);
