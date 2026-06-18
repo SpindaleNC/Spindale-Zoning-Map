@@ -728,6 +728,28 @@
         });
         bounds_group.addLayer(layer_Roads_11);
         map.addLayer(layer_Roads_11);
+		function getRoadOrientation(layer) {
+    var latlngs = layer.getLatLngs();
+
+    if (!latlngs || latlngs.length < 2) {
+        return 0;
+    }
+
+    // Handle multipart/polyline nesting
+    if (Array.isArray(latlngs[0])) {
+        latlngs = latlngs[0];
+    }
+
+    var start = latlngs[0];
+    var end = latlngs[latlngs.length - 1];
+
+    // If the line runs right-to-left on the screen, flip the text
+    if (start.lng > end.lng) {
+        return 'flip';
+    }
+
+    return 0;
+}	
 layer_Roads_11.eachLayer(function(layer) {
     if (layer.feature && layer.feature.properties && layer.feature.properties['Road_Label']) {
         layer.setText(layer.feature.properties['Road_Label'], {
@@ -735,7 +757,7 @@ layer_Roads_11.eachLayer(function(layer) {
             center: true,
             below: false,
             offset: 5,
-			orientation: 0,
+			orientation: getRoadOrientation(layer),
             attributes: {
                 'font-size': '10px',
                 'font-family': 'Arial',
