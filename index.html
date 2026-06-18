@@ -727,6 +727,153 @@
         });
         bounds_group.addLayer(layer_Roads_11);
         map.addLayer(layer_Roads_11);
+			var roadLabelLayer = L.layerGroup().addTo(map);
+
+function getLineParts(latlngs) {
+    if (!latlngs || latlngs.length === 0) {
+        return [];
+    }
+
+    if (latlngs[0].lat !== undefined && latlngs[0].lng !== undefined) {
+        return [latlngs];
+    }
+
+    var parts = [];
+    latlngs.forEach(function(part) {
+        parts = parts.concat(getLineParts(part));
+    });
+    return parts;
+}
+
+function getLongestPart(parts) {
+    var longest = null;
+    var longestLength = 0;
+
+    parts.forEach(function(part) {
+        var length = 0;
+
+        for (var i = 1; i < part.length; i++) {
+            length += part[i - 1].distanceTo(part[i]);
+        }
+
+        if (length > longestLength) {
+            longestLength = length;
+            longest = part;
+        }
+    });
+
+    return longest;
+}
+
+function getMiddleSegment(part) {
+    if (!part || part.length < 2) {
+        return null;
+    }
+
+    var totalLength = 0;
+    var segmentLengths = [];
+
+    for (var i = 1; i < part.length; i++) {
+        var segmentLength = part[i - 1].distanceTo(part[i]);
+        segmentLengths.push(segmentLength);
+        totalLength += segmentLength;
+    }
+
+    var halfway = totalLength / 2;
+    var running = 0;
+
+    for (var j = 1; j < part.length; j++) {
+        running += segmentLengths[j - 1];
+
+        if (running >= halfway) {
+            return {
+                start: part[j - 1],
+                end: part[j]
+            };
+        }
+    }
+
+    return {
+        start: part[0],
+        end: part[part.length - 1]
+    };
+}
+
+function getUprightAngle(start, end) {
+    var p1 = map.latLngToLayerPoint(start);
+    var p2 = map.latLngToLayerPoint(end);
+
+    var angle = Math.atan2(p2.y - p1.y, p2.x - p1.x) * 180 / Math.PI;
+
+    // Keep text readable from left-to-right.
+    if (angle > 90) {
+        angle -= 180;
+    }
+
+    if (angle < -90) {
+        angle += 180;
+    }
+
+    return angle;
+}
+
+function getMidpoint(start, end) {
+    return L.latLng(
+        (start.lat + end.lat) / 2,
+        (start.lng + end.lng) / 2
+    );
+}
+
+function drawRoadLabels() {
+    roadLabelLayer.clearLayers();
+
+    var labeledRoads = new Set();
+
+    layer_Roads_11.eachLayer(function(layer) {
+        if (
+            !layer.feature ||
+            !layer.feature.properties ||
+            !layer.feature.properties['Road_Label']
+        ) {
+            return;
+        }
+
+        var roadName = layer.feature.properties['Road_Label'];
+
+        // Label each road name once to reduce clutter.
+        if (labeledRoads.has(roadName)) {
+            return;
+        }
+
+        labeledRoads.add(roadName);
+
+        var parts = getLineParts(layer.getLatLngs());
+        var longestPart = getLongestPart(parts);
+        var segment = getMiddleSegment(longestPart);
+
+        if (!segment) {
+            return;
+        }
+
+        var angle = getUprightAngle(segment.start, segment.end);
+        var midpoint = getMidpoint(segment.start, segment.end);
+
+        var label = L.marker(midpoint, {
+            interactive: false,
+            icon: L.divIcon({
+                className: 'road-rotated-label',
+                html: '<div style="transform: rotate(' + angle + 'deg);">' + roadName + '</div>',
+                iconSize: null
+            })
+        });
+
+        roadLabelLayer.addLayer(label);
+    });
+}
+
+drawRoadLabels();
+
+map.on('zoomend moveend', drawRoadLabels);
         function pop_Parcels_12(feature, layer) {
             layer.on({
                 mouseout: function(e) {
@@ -881,7 +1028,9 @@
                 feature: layer.feature,
                 variables: {}
             };
-            layer.bindTooltip((layer.feature.properties['Road_Label'] !== null?String('<div style="color: #323232; font-size: 7pt; font-weight: bold; font-family: \'Open Sans\', sans-serif;">' + layer.feature.properties['Road_Label']) + '</div>':''), {permanent: true, direction: 'center', offset: [0, 4], className: 'css_Roads_11'});
+            /*
+layer.bindTooltip(...Road_Label...);
+*/
             labels.push(layer);
             totalMarkers += 1;
               layer.added = true;
