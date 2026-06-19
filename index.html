@@ -20,6 +20,20 @@
             padding: 0;
             margin: 0;
         }
+
+        /* Custom road labels: follows road angle and flips text so it stays readable */
+        .road-label-along-line {
+            position: absolute;
+            white-space: nowrap;
+            pointer-events: none;
+            color: #323232;
+            font-size: 7pt;
+            font-weight: bold;
+            font-family: 'Open Sans', Arial, sans-serif;
+            text-shadow: -1px -1px 0 #ffffff, 1px -1px 0 #ffffff, -1px 1px 0 #ffffff, 1px 1px 0 #ffffff;
+            transform-origin: center center;
+            line-height: 1;
+        }
         </style>
         <title></title>
     </head>
@@ -727,153 +741,6 @@
         });
         bounds_group.addLayer(layer_Roads_11);
         map.addLayer(layer_Roads_11);
-			/*var roadLabelLayer = L.layerGroup().addTo(map);
-
-function getLineParts(latlngs) {
-    if (!latlngs || latlngs.length === 0) {
-        return [];
-    }
-
-    if (latlngs[0].lat !== undefined && latlngs[0].lng !== undefined) {
-        return [latlngs];
-    }
-
-    var parts = [];
-    latlngs.forEach(function(part) {
-        parts = parts.concat(getLineParts(part));
-    });
-    return parts;
-}
-
-function getLongestPart(parts) {
-    var longest = null;
-    var longestLength = 0;
-
-    parts.forEach(function(part) {
-        var length = 0;
-
-        for (var i = 1; i < part.length; i++) {
-            length += part[i - 1].distanceTo(part[i]);
-        }
-
-        if (length > longestLength) {
-            longestLength = length;
-            longest = part;
-        }
-    });
-
-    return longest;
-}
-
-function getMiddleSegment(part) {
-    if (!part || part.length < 2) {
-        return null;
-    }
-
-    var totalLength = 0;
-    var segmentLengths = [];
-
-    for (var i = 1; i < part.length; i++) {
-        var segmentLength = part[i - 1].distanceTo(part[i]);
-        segmentLengths.push(segmentLength);
-        totalLength += segmentLength;
-    }
-
-    var halfway = totalLength / 2;
-    var running = 0;
-
-    for (var j = 1; j < part.length; j++) {
-        running += segmentLengths[j - 1];
-
-        if (running >= halfway) {
-            return {
-                start: part[j - 1],
-                end: part[j]
-            };
-        }
-    }
-
-    return {
-        start: part[0],
-        end: part[part.length - 1]
-    };
-}
-
-function getUprightAngle(start, end) {
-    var p1 = map.latLngToLayerPoint(start);
-    var p2 = map.latLngToLayerPoint(end);
-
-    var angle = Math.atan2(p2.y - p1.y, p2.x - p1.x) * 180 / Math.PI;
-
-    // Keep text readable from left-to-right.
-    if (angle > 90) {
-        angle -= 180;
-    }
-
-    if (angle < -90) {
-        angle += 180;
-    }
-
-    return angle;
-}
-
-function getMidpoint(start, end) {
-    return L.latLng(
-        (start.lat + end.lat) / 2,
-        (start.lng + end.lng) / 2
-    );
-}
-
-function drawRoadLabels() {
-    roadLabelLayer.clearLayers();
-
-    var labeledRoads = new Set();
-
-    layer_Roads_11.eachLayer(function(layer) {
-        if (
-            !layer.feature ||
-            !layer.feature.properties ||
-            !layer.feature.properties['Road_Label']
-        ) {
-            return;
-        }
-
-        var roadName = layer.feature.properties['Road_Label'];
-
-        // Label each road name once to reduce clutter.
-        if (labeledRoads.has(roadName)) {
-            return;
-        }
-
-        labeledRoads.add(roadName);
-
-        var parts = getLineParts(layer.getLatLngs());
-        var longestPart = getLongestPart(parts);
-        var segment = getMiddleSegment(longestPart);
-
-        if (!segment) {
-            return;
-        }
-
-        var angle = getUprightAngle(segment.start, segment.end);
-        var midpoint = getMidpoint(segment.start, segment.end);
-
-        var label = L.marker(midpoint, {
-            interactive: false,
-            icon: L.divIcon({
-                className: 'road-rotated-label',
-                html: '<div style="transform: rotate(' + angle + 'deg);">' + roadName + '</div>',
-                iconSize: null
-            })
-        });
-
-        roadLabelLayer.addLayer(label);
-    });
-}
-
-drawRoadLabels();
-
-map.on('zoomend moveend', drawRoadLabels);*/
         function pop_Parcels_12(feature, layer) {
             layer.on({
                 mouseout: function(e) {
@@ -1022,21 +889,163 @@ map.on('zoomend moveend', drawRoadLabels);*/
             }  
         });       
         setBounds();
-        var i = 0;
-        layer_Roads_11.eachLayer(function(layer) {
-            var context = {
-                feature: layer.feature,
-                variables: {}
-            };
-            /*
-layer.bindTooltip(...Road_Label...);
-*/
-            labels.push(layer);
-            totalMarkers += 1;
-              layer.added = true;
-              addLabel(layer, i);
-              i++;
+
+        // --- Road labels that sit along the road centerline ---
+        // This replaces the qgis2web tooltip labels. It picks the best straight segment
+        // of each road feature, rotates the text to match that segment, then flips it
+        // when needed so the label is never upside down.
+        map.createPane('pane_RoadLabels_Custom');
+        map.getPane('pane_RoadLabels_Custom').style.zIndex = 650;
+        map.getPane('pane_RoadLabels_Custom').style.pointerEvents = 'none';
+
+        function flattenRoadPaths(latlngs) {
+            var paths = [];
+            function walk(arr) {
+                if (!arr || !arr.length) return;
+                if (arr[0] && typeof arr[0].lat === 'number') {
+                    paths.push(arr);
+                } else {
+                    for (var i = 0; i < arr.length; i++) walk(arr[i]);
+                }
+            }
+            walk(latlngs);
+            return paths;
+        }
+
+        function normalizeAngle(angle) {
+            while (angle <= -180) angle += 360;
+            while (angle > 180) angle -= 360;
+            return angle;
+        }
+
+        function correctedRoadLabelAngle(angle, x, y) {
+            // Keep the label following the road, but force the same read direction
+            // shown in the updated sketch:
+            //   east/west roads read left-to-right;
+            //   north/south roads above the map center use +90;
+            //   north/south roads below the map center use -90;
+            //   diagonal roads are flipped only when they would read upside down.
+            angle = normalizeAngle(angle);
+
+            var absAngle = Math.abs(angle);
+            var center = map.getSize().divideBy(2);
+
+            // Nearly horizontal: keep it left-to-right.
+            if (absAngle <= 8 || absAngle >= 172) {
+                return 0;
+            }
+
+            // Nearly vertical: use the top/bottom pattern from the sketch.
+            if (Math.abs(absAngle - 90) <= 8) {
+                return y < center.y ? 90 : -90;
+            }
+
+            // General case: keep label readable. This prevents upside-down text
+            // while still letting diagonal roads keep their actual angle.
+            if (angle > 90) angle -= 180;
+            if (angle < -90) angle += 180;
+            return angle;
+        }
+
+        function bestLabelPosition(layer) {
+            var paths = flattenRoadPaths(layer.getLatLngs());
+            var best = null;
+
+            for (var p = 0; p < paths.length; p++) {
+                var path = paths[p];
+                for (var i = 0; i < path.length - 1; i++) {
+                    var a = map.latLngToLayerPoint(path[i]);
+                    var b = map.latLngToLayerPoint(path[i + 1]);
+                    var dx = b.x - a.x;
+                    var dy = b.y - a.y;
+                    var len = Math.sqrt(dx * dx + dy * dy);
+                    if (len < 18) continue;
+
+                    if (!best || len > best.len) {
+                        best = {
+                            x: (a.x + b.x) / 2,
+                            y: (a.y + b.y) / 2,
+                            rawAngle: Math.atan2(dy, dx) * 180 / Math.PI,
+                            len: len
+                        };
+                    }
+                }
+            }
+            return best;
+        }
+
+        function labelBoxesOverlap(a, b) {
+            return !(a.right < b.left || a.left > b.right || a.bottom < b.top || a.top > b.bottom);
+        }
+
+        function hideOverlappingRoadLabels() {
+            var shown = [];
+            var roadLabels = Array.prototype.slice.call(document.querySelectorAll('.road-label-along-line'));
+
+            roadLabels.sort(function(a, b) {
+                return Number(b.getAttribute('data-road-length')) - Number(a.getAttribute('data-road-length'));
+            });
+
+            for (var i = 0; i < roadLabels.length; i++) {
+                var label = roadLabels[i];
+                label.style.display = '';
+                var box = label.getBoundingClientRect();
+                var overlaps = false;
+
+                for (var j = 0; j < shown.length; j++) {
+                    if (labelBoxesOverlap(box, shown[j])) {
+                        overlaps = true;
+                        break;
+                    }
+                }
+
+                if (overlaps) {
+                    label.style.display = 'none';
+                } else {
+                    shown.push(box);
+                }
+            }
+        }
+
+        function drawRoadLabels() {
+            var pane = map.getPane('pane_RoadLabels_Custom');
+            if (!pane) return;
+
+            pane.querySelectorAll('.road-label-along-line').forEach(function(el) {
+                el.remove();
+            });
+
+            if (!map.hasLayer(layer_Roads_11)) return;
+
+            layer_Roads_11.eachLayer(function(layer) {
+                var labelText = layer.feature && layer.feature.properties ? layer.feature.properties['Road_Label'] : null;
+                if (labelText === null || labelText === undefined || String(labelText).trim() === '') return;
+
+                var pos = bestLabelPosition(layer);
+                if (!pos) return;
+
+                var div = document.createElement('div');
+                div.className = 'road-label-along-line';
+                div.textContent = String(labelText);
+                var angle = correctedRoadLabelAngle(pos.rawAngle, pos.x, pos.y);
+                div.setAttribute('data-road-length', pos.len);
+                div.setAttribute('data-road-angle', angle);
+                div.style.left = pos.x + 'px';
+                div.style.top = pos.y + 'px';
+                div.style.transform = 'translate(-50%, -50%) rotate(' + angle + 'deg)';
+                pane.appendChild(div);
+            });
+
+            hideOverlappingRoadLabels();
+        }
+
+        map.whenReady(function() {
+            drawRoadLabels();
         });
+        map.on('zoomend moveend layeradd layerremove', function() {
+            drawRoadLabels();
+        });
+
         map.addControl(new L.Control.Search({
             layer: layer_Parcels_12,
             initial: false,
@@ -1047,16 +1056,6 @@ layer.bindTooltip(...Road_Label...);
         } else {
             document.getElementsByClassName('search-button')[1].className += ' fa fa-binoculars';
         }
-        resetLabels([layer_Roads_11]);
-        map.on("zoomend", function(){
-            resetLabels([layer_Roads_11]);
-        });
-        map.on("layeradd", function(){
-            resetLabels([layer_Roads_11]);
-        });
-        map.on("layerremove", function(){
-            resetLabels([layer_Roads_11]);
-        });
         </script>        
     </body>
 </html>
