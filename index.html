@@ -876,34 +876,35 @@
         map.addControl(parcelSearchControl);
 
         parcelSearchControl.on('search:locationfound', function(e) {
-            if (selectedParcelLayer) {
-                layer_Parcels_11.resetStyle(selectedParcelLayer);
-            }
+    if (selectedParcelLayer) {
+        layer_Parcels_11.resetStyle(selectedParcelLayer);
+    }
 
-            selectedParcelLayer = e.layer;
+    selectedParcelLayer = e.layer;
 
-            selectedParcelLayer.setStyle({
-                color: 'red',
-                weight: 4,
-                opacity: 1,
-                fillOpacity: 0
-            });
+    selectedParcelLayer.setStyle({
+        color: 'red',
+        weight: 4,
+        opacity: 1,
+        fillOpacity: 0
+    });
 
-            if (selectedParcelLayer.bringToFront) {
-                selectedParcelLayer.bringToFront();
-            }
-
-            if (selectedParcelLayer.getBounds) {
-                map.fitBounds(selectedParcelLayer.getBounds(), {
-                    padding: [40, 40],
-                    maxZoom: 19
-                });
-            }
-
-            if (selectedParcelLayer.openPopup) {
-                selectedParcelLayer.openPopup();
-            }
+    if (selectedParcelLayer.getBounds) {
+        map.fitBounds(selectedParcelLayer.getBounds(), {
+            padding: [40, 40],
+            maxZoom: 19
         });
+    }
+
+    if (selectedParcelLayer.openPopup) {
+        selectedParcelLayer.openPopup();
+    }
+
+    setTimeout(function() {
+        map.dragging.enable();
+        map.scrollWheelZoom.enable();
+    }, 100);
+});
 if (typeof url === 'undefined') {
     document.getElementsByClassName('search-button')[0].className += ' fa fa-search';
 } else {
