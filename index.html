@@ -670,6 +670,7 @@
         });
         bounds_group.addLayer(layer_Structures_9);
         map.addLayer(layer_Structures_9);
+
         function pop_Roads_10(feature, layer) {
             layer.on({
                 mouseout: function(e) {
@@ -687,10 +688,10 @@
                     </tr>\
                 </table>';
             var content = removeEmptyRowsFromPopupContent(popupContent, feature);
-			layer.on('popupopen', function(e) {
-				addClassToPopupIfMedia(content, e.popup);
-			});
-			layer.bindPopup(content, { maxHeight: 400 });
+            layer.on('popupopen', function(e) {
+                addClassToPopupIfMedia(content, e.popup);
+            });
+            layer.bindPopup(content, { maxHeight: 400 });
         }
 
         function style_Roads_10_0() {
@@ -706,9 +707,11 @@
                 interactive: false,
             }
         }
+
         map.createPane('pane_Roads_10');
         map.getPane('pane_Roads_10').style.zIndex = 410;
         map.getPane('pane_Roads_10').style['mix-blend-mode'] = 'normal';
+
         var layer_Roads_10 = new L.geoJson(json_Roads_10, {
             attribution: '',
             interactive: false,
@@ -718,10 +721,14 @@
             onEachFeature: pop_Roads_10,
             style: style_Roads_10_0,
         });
+
         bounds_group.addLayer(layer_Roads_10);
         map.addLayer(layer_Roads_10);
+
+        var selectedParcelLayer = null;
+
         function pop_Parcels_11(feature, layer) {
-                        layer.on({
+            layer.on({
                 mouseout: function(e) {
                     if (typeof selectedParcelLayer !== 'undefined' && e.target === selectedParcelLayer) {
                         return;
@@ -775,11 +782,12 @@
                         <td>' + (hasPopupValue(feature.properties['ZONINGINQUIRIES']) ? popupLinkValue(feature.properties['ZONINGINQUIRIES']) : '') + '</td>\
                     </tr>\
                 </table>';
+
             var content = removeEmptyRowsFromPopupContent(popupContent, feature);
-			layer.on('popupopen', function(e) {
-				addClassToPopupIfMedia(content, e.popup);
-			});
-			layer.bindPopup(content, { maxHeight: 400 });
+            layer.on('popupopen', function(e) {
+                addClassToPopupIfMedia(content, e.popup);
+            });
+            layer.bindPopup(content, { maxHeight: 400 });
         }
 
         function style_Parcels_11_0() {
@@ -790,29 +798,31 @@
                 dashArray: '',
                 lineCap: 'butt',
                 lineJoin: 'miter',
-                weight: 1.0, 
+                weight: 1.0,
                 fill: true,
                 fillOpacity: 1,
                 fillColor: 'rgba(255,255,255,0.0)',
                 interactive: true,
             }
         }
+
         map.createPane('pane_Parcels_11');
         map.getPane('pane_Parcels_11').style.zIndex = 411;
         map.getPane('pane_Parcels_11').style['mix-blend-mode'] = 'normal';
+
         var layer_Parcels_11 = new L.geoJson(json_Parcels_11, {
             attribution: '',
             interactive: true,
+            bubblingMouseEvents: true,
             dataVar: 'json_Parcels_11',
             layerName: 'layer_Parcels_11',
             pane: 'pane_Parcels_11',
             onEachFeature: pop_Parcels_11,
             style: style_Parcels_11_0,
         });
+
         bounds_group.addLayer(layer_Parcels_11);
         map.addLayer(layer_Parcels_11);
-
-        var selectedParcelLayer = null;
 
         layer_Parcels_11.eachLayer(function(layer) {
             layer.on('click', function(e) {
@@ -828,10 +838,6 @@
                     opacity: 1,
                     fillOpacity: 0
                 });
-
-                if (selectedParcelLayer.bringToFront) {
-                    selectedParcelLayer.bringToFront();
-                }
             });
         });
 
