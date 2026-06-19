@@ -727,16 +727,29 @@
         });
         bounds_group.addLayer(layer_Roads_11);
         map.addLayer(layer_Roads_11);
+
+        var selectedParcelLayer = null;
+
         function pop_Parcels_12(feature, layer) {
             layer.on({
                 mouseout: function(e) {
+                    if (typeof selectedParcelLayer !== 'undefined' && e.target === selectedParcelLayer) {
+                        return;
+                    }
+
                     for (var i in e.target._eventParents) {
                         if (typeof e.target._eventParents[i].resetStyle === 'function') {
                             e.target._eventParents[i].resetStyle(e.target);
                         }
                     }
                 },
-                mouseover: highlightFeature,
+                mouseover: function(e) {
+                    if (typeof selectedParcelLayer !== 'undefined' && e.target === selectedParcelLayer) {
+                        return;
+                    }
+
+                    highlightFeature(e);
+                },
             });
             var popupContent = '<table>\
                     <tr>\
@@ -792,6 +805,7 @@
         var layer_Parcels_12 = new L.geoJson(json_Parcels_12, {
             attribution: '',
             interactive: true,
+            bubblingMouseEvents: true,
             dataVar: 'json_Parcels_12',
             layerName: 'layer_Parcels_12',
             pane: 'pane_Parcels_12',
@@ -800,6 +814,24 @@
         });
         bounds_group.addLayer(layer_Parcels_12);
         map.addLayer(layer_Parcels_12);
+
+        layer_Parcels_12.eachLayer(function(layer) {
+            layer.on('click', function(e) {
+                if (selectedParcelLayer && selectedParcelLayer !== layer) {
+                    layer_Parcels_12.resetStyle(selectedParcelLayer);
+                }
+
+                selectedParcelLayer = layer;
+
+                selectedParcelLayer.setStyle({
+                    color: 'red',
+                    weight: 4,
+                    opacity: 1,
+                    fillOpacity: 0
+                });
+            });
+        });
+
         var overlaysTree = [
             {label: '<img src="legend/Parcels_12.png" /> Parcels', layer: layer_Parcels_12},
             {label: '<img src="legend/Roads_11.png" /> Roads', layer: layer_Roads_11},
@@ -888,15 +920,45 @@
               addLabel(layer, i);
               i++;
         });
-        map.addControl(new L.Control.Search({
+        var parcelSearchControl = new L.Control.Search({
             layer: layer_Parcels_12,
             initial: false,
             hideMarkerOnCollapse: true,
-            propertyName: 'SITEADDRESS'}));
+            marker: false,
+            propertyName: 'SITEADDRESS'
+        });
+
+        map.addControl(parcelSearchControl);
+
+        parcelSearchControl.on('search:locationfound', function(e) {
+            map.closePopup();
+
+            setTimeout(function() {
+                if (e.layer) {
+                    e.layer.fire('click');
+                }
+
+                if (e.layer && e.layer.getBounds) {
+                    map.fitBounds(e.layer.getBounds(), {
+                        padding: [40, 40],
+                        maxZoom: 19
+                    });
+                }
+
+                map.dragging.enable();
+                map.scrollWheelZoom.enable();
+
+                var searchInputs = document.getElementsByClassName('search-input');
+                for (var i = 0; i < searchInputs.length; i++) {
+                    searchInputs[i].blur();
+                }
+            }, 100);
+        });
+
         if (typeof url === 'undefined') {
-            document.getElementsByClassName('search-button')[0].className += ' fa fa-binoculars';
+            document.getElementsByClassName('search-button')[0].className += ' fa fa-search';
         } else {
-            document.getElementsByClassName('search-button')[1].className += ' fa fa-binoculars';
+            document.getElementsByClassName('search-button')[1].className += ' fa fa-search';
         }
         resetLabels([layer_Roads_11]);
         map.on("zoomend", function(){
