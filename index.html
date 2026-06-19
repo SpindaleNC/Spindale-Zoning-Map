@@ -10,6 +10,7 @@
         <link rel="stylesheet" href="css/L.Control.Layers.Tree.css">
         <link rel="stylesheet" href="css/qgis2web.css">
         <link rel="stylesheet" href="css/fontawesome-all.min.css">
+		<link rel="stylesheet" href="css/leaflet-search.css">
         <link rel="stylesheet" href="css/leaflet.photon.css">
         <link rel="stylesheet" href="css/leaflet-measure.css">
         <style>
@@ -52,6 +53,7 @@
         <script src="js/labels.js"></script>
         <script src="js/leaflet.photon.js"></script>
         <script src="js/leaflet-measure.js"></script>
+		<script src="js/leaflet-search.js"></script>
         <script src="data/HCI_1.js"></script>
         <script src="data/CC_2.js"></script>
         <script src="data/GC_3.js"></script>
@@ -820,6 +822,18 @@
             collapsed: false, 
         });
         lay.addTo(map);
+		map.addControl(new L.Control.Search({
+    layer: layer_Parcels_11,
+    initial: false,
+    hideMarkerOnCollapse: true,
+    propertyName: 'SITEADDRESS'
+}));
+
+if (typeof url === 'undefined') {
+    document.getElementsByClassName('search-button')[0].className += ' fa fa-binoculars';
+} else {
+    document.getElementsByClassName('search-button')[1].className += ' fa fa-binoculars';
+}	
 		document.addEventListener("DOMContentLoaded", function() {
             // set new Layers List height which considers toggle icon
             function newLayersListHeight() {
