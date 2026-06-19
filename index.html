@@ -987,7 +987,7 @@
             }
         }
 
-        function drawRoadLabels() {
+             function drawRoadLabels() {
             var pane = map.getPane('pane_RoadLabels_Custom');
             if (!pane) return;
 
@@ -995,10 +995,11 @@
                 el.remove();
             });
 
-            if (!map.hasLayer(layer_Roads_10)) return;
-
             layer_Roads_10.eachLayer(function(layer) {
-                var labelText = layer.feature && layer.feature.properties ? layer.feature.properties['Road_Label'] : null;
+                var labelText = layer.feature && layer.feature.properties
+                    ? layer.feature.properties['Road_Label']
+                    : null;
+
                 if (!hasPopupValue(labelText)) return;
 
                 var pos = bestLabelPosition(layer);
@@ -1007,12 +1008,15 @@
                 var div = document.createElement('div');
                 div.className = 'road-label-along-line';
                 div.textContent = String(labelText);
+
                 var angle = correctedRoadLabelAngle(pos.rawAngle, pos.x, pos.y);
+
                 div.setAttribute('data-road-length', pos.len);
                 div.setAttribute('data-road-angle', angle);
                 div.style.left = pos.x + 'px';
                 div.style.top = pos.y + 'px';
                 div.style.transform = 'translate(-50%, -50%) rotate(' + angle + 'deg)';
+
                 pane.appendChild(div);
             });
 
@@ -1021,47 +1025,27 @@
 
         var roadLabelRedrawTimer = null;
 
-function scheduleRoadLabelRedraw() {
-    if (roadLabelRedrawTimer) {
-        clearTimeout(roadLabelRedrawTimer);
-    }
+        function scheduleRoadLabelRedraw() {
+            if (roadLabelRedrawTimer) {
+                clearTimeout(roadLabelRedrawTimer);
+            }
 
-    roadLabelRedrawTimer = setTimeout(function() {
-        drawRoadLabels();
-    }, 150);
-}
+            roadLabelRedrawTimer = setTimeout(function() {
+                drawRoadLabels();
+            }, 150);
+        }
 
-map.whenReady(function() {
-    drawRoadLabels();
-});
+        map.whenReady(function() {
+            drawRoadLabels();
+        });
 
-// Clear labels while zooming so Leaflet is not dragging/animating every label
-map.on('zoomstart', function() {
-    roadLabelLayer.clearLayers();
-});
+        map.on('zoomend', function() {
+            scheduleRoadLabelRedraw();
+        });
 
-// Redraw labels only after zoom finishes
-map.on('zoomend', function() {
-    scheduleRoadLabelRedraw();
-});
-
-// Redraw labels after panning finishes
-map.on('moveend', function() {
-    scheduleRoadLabelRedraw();
-});
-
-// Only redraw when the Roads layer itself is toggled
-map.on('layeradd', function(e) {
-    if (e.layer === layer_Roads_10) {
-        scheduleRoadLabelRedraw();
-    }
-});
-
-map.on('layerremove', function(e) {
-    if (e.layer === layer_Roads_10) {
-        roadLabelLayer.clearLayers();
-    }
-});
+        map.on('moveend', function() {
+            scheduleRoadLabelRedraw();
+        });
         </script>        
     </body>
 </html>
