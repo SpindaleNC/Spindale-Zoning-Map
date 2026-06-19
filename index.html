@@ -1025,26 +1025,42 @@
 
         var roadLabelRedrawTimer = null;
 
-        function scheduleRoadLabelRedraw() {
-            if (roadLabelRedrawTimer) {
-                clearTimeout(roadLabelRedrawTimer);
-            }
+       function setRoadLabelsVisible(visible) {
+    var pane = map.getPane('pane_RoadLabels_Custom');
+    if (!pane) return;
 
-            roadLabelRedrawTimer = setTimeout(function() {
-                drawRoadLabels();
-            }, 150);
-        }
+    pane.style.display = visible ? 'block' : 'none';
+}
 
-        map.whenReady(function() {
-            drawRoadLabels();
-        });
+var roadLabelRedrawTimer = null;
 
-        map.on('zoomend', function() {
-            scheduleRoadLabelRedraw();
-        });
+function scheduleRoadLabelRedraw() {
+    if (roadLabelRedrawTimer) {
+        clearTimeout(roadLabelRedrawTimer);
+    }
 
-        map.on('moveend', function() {
-            scheduleRoadLabelRedraw();
+    roadLabelRedrawTimer = setTimeout(function() {
+        setRoadLabelsVisible(true);
+        drawRoadLabels();
+    }, 150);
+}
+
+map.whenReady(function() {
+    setRoadLabelsVisible(true);
+    drawRoadLabels();
+});
+
+map.on('zoomstart', function() {
+    setRoadLabelsVisible(false);
+});
+
+map.on('zoomend', function() {
+    scheduleRoadLabelRedraw();
+});
+
+map.on('moveend', function() {
+    scheduleRoadLabelRedraw();
+});
         });
         </script>        
     </body>
