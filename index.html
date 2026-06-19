@@ -821,12 +821,41 @@
             //expandAll: 'Expand all',
             collapsed: false, 
         });
-        lay.addTo(map);
-		map.addControl(new L.Control.Search({
+        var parcelSearchControl = new L.Control.Search({
     layer: layer_Parcels_11,
     initial: false,
     hideMarkerOnCollapse: true,
     propertyName: 'SITEADDRESS'
+});
+
+map.addControl(parcelSearchControl);
+
+var searchedParcelLayer = null;
+
+parcelSearchControl.on('search:locationfound', function(e) {
+    if (searchedParcelLayer) {
+        layer_Parcels_11.resetStyle(searchedParcelLayer);
+    }
+
+    searchedParcelLayer = e.layer;
+
+    e.layer.setStyle({
+        color: 'red',
+        weight: 4,
+        fillOpacity: 0
+    });
+
+    if (e.layer.getBounds) {
+        map.fitBounds(e.layer.getBounds(), {
+            padding: [40, 40],
+            maxZoom: 19
+        });
+    }
+
+    if (e.layer.openPopup) {
+        e.layer.openPopup();
+    }
+});
 }));
 
 if (typeof url === 'undefined') {
