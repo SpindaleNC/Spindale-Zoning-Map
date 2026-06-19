@@ -800,8 +800,6 @@
         bounds_group.addLayer(layer_Parcels_11);
         map.addLayer(layer_Parcels_11);
         var overlaysTree = [
-            {label: '<img src="legend/Parcels_11.png" /> Parcels', layer: layer_Parcels_11},
-            {label: '<img src="legend/Roads_10.png" /> Roads', layer: layer_Roads_10},
             {label: '<img src="legend/Structures_9.png" /> Structures', layer: layer_Structures_9},
             {label: '<img src="legend/ConditionalZoning_8.png" /> Conditional Zoning', layer: layer_ConditionalZoning_8},
             {label: '<img src="legend/R6_7.png" /> R-6', layer: layer_R6_7},
@@ -1021,12 +1019,49 @@
             hideOverlappingRoadLabels();
         }
 
-        map.whenReady(function() {
-            drawRoadLabels();
-        });
-        map.on('zoomend moveend layeradd layerremove', function() {
-            drawRoadLabels();
-        });
+        var roadLabelRedrawTimer = null;
+
+function scheduleRoadLabelRedraw() {
+    if (roadLabelRedrawTimer) {
+        clearTimeout(roadLabelRedrawTimer);
+    }
+
+    roadLabelRedrawTimer = setTimeout(function() {
+        drawRoadLabels();
+    }, 150);
+}
+
+map.whenReady(function() {
+    drawRoadLabels();
+});
+
+// Clear labels while zooming so Leaflet is not dragging/animating every label
+map.on('zoomstart', function() {
+    roadLabelLayer.clearLayers();
+});
+
+// Redraw labels only after zoom finishes
+map.on('zoomend', function() {
+    scheduleRoadLabelRedraw();
+});
+
+// Redraw labels after panning finishes
+map.on('moveend', function() {
+    scheduleRoadLabelRedraw();
+});
+
+// Only redraw when the Roads layer itself is toggled
+map.on('layeradd', function(e) {
+    if (e.layer === layer_Roads_10) {
+        scheduleRoadLabelRedraw();
+    }
+});
+
+map.on('layerremove', function(e) {
+    if (e.layer === layer_Roads_10) {
+        roadLabelLayer.clearLayers();
+    }
+});
         </script>        
     </body>
 </html>
