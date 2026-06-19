@@ -987,7 +987,7 @@
             }
         }
 
-             function drawRoadLabels() {
+        function drawRoadLabels() {
             var pane = map.getPane('pane_RoadLabels_Custom');
             if (!pane) return;
 
@@ -1023,44 +1023,41 @@
             hideOverlappingRoadLabels();
         }
 
+        function setRoadLabelsVisible(visible) {
+            var pane = map.getPane('pane_RoadLabels_Custom');
+            if (!pane) return;
+
+            pane.style.display = visible ? 'block' : 'none';
+        }
+
         var roadLabelRedrawTimer = null;
 
-       function setRoadLabelsVisible(visible) {
-    var pane = map.getPane('pane_RoadLabels_Custom');
-    if (!pane) return;
+        function scheduleRoadLabelRedraw() {
+            if (roadLabelRedrawTimer) {
+                clearTimeout(roadLabelRedrawTimer);
+            }
 
-    pane.style.display = visible ? 'block' : 'none';
-}
+            roadLabelRedrawTimer = setTimeout(function() {
+                setRoadLabelsVisible(true);
+                drawRoadLabels();
+            }, 150);
+        }
 
-var roadLabelRedrawTimer = null;
+        map.whenReady(function() {
+            setRoadLabelsVisible(true);
+            drawRoadLabels();
+        });
 
-function scheduleRoadLabelRedraw() {
-    if (roadLabelRedrawTimer) {
-        clearTimeout(roadLabelRedrawTimer);
-    }
+        map.on('zoomstart', function() {
+            setRoadLabelsVisible(false);
+        });
 
-    roadLabelRedrawTimer = setTimeout(function() {
-        setRoadLabelsVisible(true);
-        drawRoadLabels();
-    }, 150);
-}
+        map.on('zoomend', function() {
+            scheduleRoadLabelRedraw();
+        });
 
-map.whenReady(function() {
-    setRoadLabelsVisible(true);
-    drawRoadLabels();
-});
-
-map.on('zoomstart', function() {
-    setRoadLabelsVisible(false);
-});
-
-map.on('zoomend', function() {
-    scheduleRoadLabelRedraw();
-});
-
-map.on('moveend', function() {
-    scheduleRoadLabelRedraw();
-});
+        map.on('moveend', function() {
+            scheduleRoadLabelRedraw();
         });
         </script>        
     </body>
