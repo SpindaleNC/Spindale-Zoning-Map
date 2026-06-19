@@ -19,6 +19,30 @@
             padding: 0;
             margin: 0;
         }
+
+        /* Custom road labels */
+        .road-label-icon {
+            background: transparent;
+            border: none;
+        }
+
+        .road-label-text {
+            position: absolute;
+            left: 0;
+            top: 0;
+            transform-origin: center center;
+            white-space: nowrap;
+            color: #323232;
+            font-size: 7pt;
+            font-weight: bold;
+            font-family: 'Open Sans', sans-serif;
+            text-shadow:
+                -1px -1px 0 #ffffff,
+                 1px -1px 0 #ffffff,
+                -1px  1px 0 #ffffff,
+                 1px  1px 0 #ffffff;
+            pointer-events: none;
+        }
         </style>
         <title></title>
     </head>
@@ -79,8 +103,11 @@
          for (var i = 0; i < rows.length; i++) {
              var td = rows[i].querySelector('td.visible-with-data');
              var key = td ? td.id : '';
-             if (td && td.classList.contains('visible-with-data') && feature.properties[key] == null) {
-                 rows[i].parentNode.removeChild(rows[i]);
+             var value = td && feature.properties ? feature.properties[key] : null;
+             if (td && td.classList.contains('visible-with-data')) {
+                 if (value === null || value === undefined || String(value).trim() === '') {
+                     rows[i].parentNode.removeChild(rows[i]);
+                 }
              }
          }
          return tempDiv.innerHTML;
@@ -717,6 +744,10 @@
                         <td>' + (feature.properties['ZONING'] !== null ? autolinker.link(String(feature.properties['ZONING']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
                     </tr>\
                     <tr>\
+                        <th scope="row">Conditional Zoning Agreement:</th>\
+                        <td class="visible-with-data" id="CZA_AGREEMENT">' + (feature.properties['CZA_AGREEMENT'] !== null && feature.properties['CZA_AGREEMENT'] !== undefined && String(feature.properties['CZA_AGREEMENT']).trim() !== '' ? autolinker.link(String(feature.properties['CZA_AGREEMENT']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
                         <th scope="row">Table of Permitted Uses:</th>\
                         <td>' + (feature.properties['PERMITTEDUSES'] !== null ? autolinker.link(String(feature.properties['PERMITTEDUSES']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
                     </tr>\
@@ -728,12 +759,7 @@
                         <th scope="row">Zoning Questions and Inquiries:</th>\
                         <td>' + (feature.properties['ZONINGINQUIRIES'] !== null ? autolinker.link(String(feature.properties['ZONINGINQUIRIES']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
                     </tr>\
-                    <tr>\
-                        <th scope="row">Conditional Zoning Agreement:</th>\
-                        <td>' + (feature.properties['CZA_AGREEMENT'] !== null ? autolinker.link(String(feature.properties['CZA_AGREEMENT']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
-                    </tr>\
-                </table>';
-            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+                </table>';            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
 			layer.on('popupopen', function(e) {
 				addClassToPopupIfMedia(content, e.popup);
 			});
@@ -843,28 +869,187 @@
             }  
         });       
         setBounds();
-        var i = 0;
-        layer_Roads_10.eachLayer(function(layer) {
-            var context = {
-                feature: layer.feature,
-                variables: {}
-            };
-            layer.bindTooltip((layer.feature.properties['Road_Label'] !== null?String('<div style="color: #323232; font-size: 7pt; font-weight: bold; font-family: \'Open Sans\', sans-serif;">' + layer.feature.properties['Road_Label']) + '</div>':''), {permanent: true, offset: [-0, -16], className: 'css_Roads_10'});
-            labels.push(layer);
-            totalMarkers += 1;
-              layer.added = true;
-              addLabel(layer, i);
-              i++;
+        // -----------------------------
+        // Custom rotated road labels
+        // -----------------------------
+
+        var roadLabelLayer = L.layerGroup().addTo(map);
+
+        function getRoadLabelText(feature) {
+            if (!feature || !feature.properties) {
+                return '';
+            }
+
+            var label = feature.properties['Road_Label'];
+
+            if (label === null || label === undefined) {
+                return '';
+            }
+
+            label = String(label).trim();
+
+            if (label === '' || label.toLowerCase() === 'false') {
+                return '';
+            }
+
+            return label;
+        }
+
+        function collectLineStrings(latlngs) {
+            var lines = [];
+
+            if (!latlngs || !latlngs.length) {
+                return lines;
+            }
+
+            if (latlngs[0] instanceof L.LatLng) {
+                lines.push(latlngs);
+            } else {
+                for (var i = 0; i < latlngs.length; i++) {
+                    lines = lines.concat(collectLineStrings(latlngs[i]));
+                }
+            }
+
+            return lines;
+        }
+
+        function normalizeAngle(angle) {
+            while (angle > 180) {
+                angle -= 360;
+            }
+
+            while (angle <= -180) {
+                angle += 360;
+            }
+
+            return angle;
+        }
+
+        function getBestRoadSegment(layer) {
+            var lines = collectLineStrings(layer.getLatLngs());
+            var best = null;
+            var bestDistance = 0;
+
+            for (var i = 0; i < lines.length; i++) {
+                var line = lines[i];
+
+                for (var j = 0; j < line.length - 1; j++) {
+                    var p1 = map.latLngToContainerPoint(line[j]);
+                    var p2 = map.latLngToContainerPoint(line[j + 1]);
+
+                    var dx = p2.x - p1.x;
+                    var dy = p2.y - p1.y;
+                    var distance = Math.sqrt(dx * dx + dy * dy);
+
+                    if (distance > bestDistance) {
+                        bestDistance = distance;
+                        best = {
+                            p1: p1,
+                            p2: p2,
+                            midpoint: L.point(
+                                (p1.x + p2.x) / 2,
+                                (p1.y + p2.y) / 2
+                            )
+                        };
+                    }
+                }
+            }
+
+            return best;
+        }
+
+        function getRoadLabelAngle(segment) {
+            var dx = segment.p2.x - segment.p1.x;
+            var dy = segment.p2.y - segment.p1.y;
+
+            var angle = Math.atan2(dy, dx) * 180 / Math.PI;
+            angle = normalizeAngle(angle);
+
+            // Keep east/west labels reading left-to-right.
+            if (angle > 90) {
+                angle -= 180;
+            }
+
+            if (angle < -90) {
+                angle += 180;
+            }
+
+            // Corrected vertical-road logic based on your sketch.
+            var isMostlyVertical = Math.abs(Math.abs(angle) - 90) < 35;
+
+            if (isMostlyVertical) {
+                var mapMiddleY = map.getSize().y / 2;
+
+                if (segment.midpoint.y < mapMiddleY) {
+                    angle = 90;
+                } else {
+                    angle = -90;
+                }
+            }
+
+            return angle;
+        }
+
+        function drawRoadLabels() {
+            roadLabelLayer.clearLayers();
+
+            if (!map.hasLayer(layer_Roads_10)) {
+                return;
+            }
+
+            layer_Roads_10.eachLayer(function(layer) {
+                var labelText = getRoadLabelText(layer.feature);
+
+                if (!labelText) {
+                    return;
+                }
+
+                var segment = getBestRoadSegment(layer);
+
+                if (!segment) {
+                    return;
+                }
+
+                var angle = getRoadLabelAngle(segment);
+                var labelLatLng = map.containerPointToLatLng(segment.midpoint);
+
+                var icon = L.divIcon({
+                    className: 'road-label-icon',
+                    iconSize: [1, 1],
+                    iconAnchor: [0, 0],
+                    html:
+                        '<div class="road-label-text" style="transform: translate(-50%, -50%) rotate(' +
+                        angle +
+                        'deg);">' +
+                        labelText +
+                        '</div>'
+                });
+
+                L.marker(labelLatLng, {
+                    icon: icon,
+                    interactive: false
+                }).addTo(roadLabelLayer);
+            });
+        }
+
+        map.whenReady(function() {
+            drawRoadLabels();
         });
-        resetLabels([layer_Roads_10]);
-        map.on("zoomend", function(){
-            resetLabels([layer_Roads_10]);
+
+        map.on('zoomend moveend', function() {
+            drawRoadLabels();
         });
-        map.on("layeradd", function(){
-            resetLabels([layer_Roads_10]);
+
+        map.on('layeradd', function(e) {
+            if (e.layer === layer_Roads_10) {
+                drawRoadLabels();
+            }
         });
-        map.on("layerremove", function(){
-            resetLabels([layer_Roads_10]);
+
+        map.on('layerremove', function(e) {
+            if (e.layer === layer_Roads_10) {
+                roadLabelLayer.clearLayers();
+            }
         });
         </script>        
     </body>
