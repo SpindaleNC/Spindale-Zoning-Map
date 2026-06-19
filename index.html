@@ -10,7 +10,6 @@
         <link rel="stylesheet" href="css/L.Control.Layers.Tree.css">
         <link rel="stylesheet" href="css/qgis2web.css">
         <link rel="stylesheet" href="css/fontawesome-all.min.css">
-        <link rel="stylesheet" href="css/leaflet-search.css">
         <link rel="stylesheet" href="css/leaflet.photon.css">
         <link rel="stylesheet" href="css/leaflet-measure.css">
         <style>
@@ -53,19 +52,17 @@
         <script src="js/labels.js"></script>
         <script src="js/leaflet.photon.js"></script>
         <script src="js/leaflet-measure.js"></script>
-        <script src="js/leaflet-search.js"></script>
-        <script src="data/TownLimits_1.js"></script>
-        <script src="data/HCI_2.js"></script>
-        <script src="data/CC_3.js"></script>
-        <script src="data/GC_4.js"></script>
-        <script src="data/NB_5.js"></script>
-        <script src="data/R20_6.js"></script>
-        <script src="data/R10_7.js"></script>
-        <script src="data/R6_8.js"></script>
-        <script src="data/ConditionalZoning_9.js"></script>
-        <script src="data/Structures_10.js"></script>
-        <script src="data/Roads_11.js"></script>
-        <script src="data/Parcels_12.js"></script>
+        <script src="data/HCI_1.js"></script>
+        <script src="data/CC_2.js"></script>
+        <script src="data/GC_3.js"></script>
+        <script src="data/NB_4.js"></script>
+        <script src="data/R20_5.js"></script>
+        <script src="data/R10_6.js"></script>
+        <script src="data/R6_7.js"></script>
+        <script src="data/ConditionalZoning_8.js"></script>
+        <script src="data/Structures_9.js"></script>
+        <script src="data/Roads_10.js"></script>
+        <script src="data/Parcels_11.js"></script>
         <script>
         var highlightLayer;
         function highlightFeature(e) {
@@ -89,6 +86,18 @@
         map.attributionControl.setPrefix('<a href="https://github.com/qgis2web/qgis2web" target="_blank">qgis2web</a> &middot; <a href="https://leafletjs.com" title="A JS library for interactive maps">Leaflet</a> &middot; <a href="https://qgis.org">QGIS</a>');
         var autolinker = new Autolinker({truncate: {length: 30, location: 'smart'}});
         // remove popup's row if "visible-with-data"
+        function hasPopupValue(value) {
+            if (value === null || value === undefined) {
+                return false;
+            }
+            var text = String(value).trim();
+            return text !== '' && text.toLowerCase() !== 'null' && text.toLowerCase() !== 'false';
+        }
+
+        function popupLinkValue(value) {
+            return autolinker.link(String(value).replace(/'/g, '\'').toLocaleString());
+        }
+
         function removeEmptyRowsFromPopupContent(content, feature) {
          var tempDiv = document.createElement('div');
          tempDiv.innerHTML = content;
@@ -96,7 +105,7 @@
          for (var i = 0; i < rows.length; i++) {
              var td = rows[i].querySelector('td.visible-with-data');
              var key = td ? td.id : '';
-             if (td && td.classList.contains('visible-with-data') && feature.properties[key] == null) {
+             if (td && td.classList.contains('visible-with-data') && !hasPopupValue(feature.properties[key])) {
                  rows[i].parentNode.removeChild(rows[i]);
              }
          }
@@ -181,7 +190,7 @@
         });
         layer_GoogleSatellite_0;
         map.addLayer(layer_GoogleSatellite_0);
-        function pop_TownLimits_1(feature, layer) {
+        function pop_HCI_1(feature, layer) {
             layer.on({
                 mouseout: function(e) {
                     for (var i in e.target._eventParents) {
@@ -201,58 +210,9 @@
 			layer.bindPopup(content, { maxHeight: 400 });
         }
 
-        function style_TownLimits_1_0() {
+        function style_HCI_1_0() {
             return {
-                pane: 'pane_TownLimits_1',
-                opacity: 1,
-                color: 'rgba(0,0,0,1.0)',
-                dashArray: '',
-                lineCap: 'butt',
-                lineJoin: 'miter',
-                weight: 1.0, 
-                fill: true,
-                fillOpacity: 1,
-                fillColor: 'rgba(0,0,0,0.0)',
-                interactive: false,
-            }
-        }
-        map.createPane('pane_TownLimits_1');
-        map.getPane('pane_TownLimits_1').style.zIndex = 401;
-        map.getPane('pane_TownLimits_1').style['mix-blend-mode'] = 'normal';
-        var layer_TownLimits_1 = new L.geoJson(json_TownLimits_1, {
-            attribution: '',
-            interactive: false,
-            dataVar: 'json_TownLimits_1',
-            layerName: 'layer_TownLimits_1',
-            pane: 'pane_TownLimits_1',
-            onEachFeature: pop_TownLimits_1,
-            style: style_TownLimits_1_0,
-        });
-        bounds_group.addLayer(layer_TownLimits_1);
-        map.addLayer(layer_TownLimits_1);
-        function pop_HCI_2(feature, layer) {
-            layer.on({
-                mouseout: function(e) {
-                    for (var i in e.target._eventParents) {
-                        if (typeof e.target._eventParents[i].resetStyle === 'function') {
-                            e.target._eventParents[i].resetStyle(e.target);
-                        }
-                    }
-                },
-                mouseover: highlightFeature,
-            });
-            var popupContent = '<table>\
-                </table>';
-            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
-			layer.on('popupopen', function(e) {
-				addClassToPopupIfMedia(content, e.popup);
-			});
-			layer.bindPopup(content, { maxHeight: 400 });
-        }
-
-        function style_HCI_2_0() {
-            return {
-                pane: 'pane_HCI_2',
+                pane: 'pane_HCI_1',
                 opacity: 1,
                 color: 'rgba(35,35,35,0.6)',
                 dashArray: '',
@@ -265,21 +225,21 @@
                 interactive: false,
             }
         }
-        map.createPane('pane_HCI_2');
-        map.getPane('pane_HCI_2').style.zIndex = 402;
-        map.getPane('pane_HCI_2').style['mix-blend-mode'] = 'normal';
-        var layer_HCI_2 = new L.geoJson(json_HCI_2, {
+        map.createPane('pane_HCI_1');
+        map.getPane('pane_HCI_1').style.zIndex = 401;
+        map.getPane('pane_HCI_1').style['mix-blend-mode'] = 'normal';
+        var layer_HCI_1 = new L.geoJson(json_HCI_1, {
             attribution: '',
             interactive: false,
-            dataVar: 'json_HCI_2',
-            layerName: 'layer_HCI_2',
-            pane: 'pane_HCI_2',
-            onEachFeature: pop_HCI_2,
-            style: style_HCI_2_0,
+            dataVar: 'json_HCI_1',
+            layerName: 'layer_HCI_1',
+            pane: 'pane_HCI_1',
+            onEachFeature: pop_HCI_1,
+            style: style_HCI_1_0,
         });
-        bounds_group.addLayer(layer_HCI_2);
-        map.addLayer(layer_HCI_2);
-        function pop_CC_3(feature, layer) {
+        bounds_group.addLayer(layer_HCI_1);
+        map.addLayer(layer_HCI_1);
+        function pop_CC_2(feature, layer) {
             layer.on({
                 mouseout: function(e) {
                     for (var i in e.target._eventParents) {
@@ -299,9 +259,9 @@
 			layer.bindPopup(content, { maxHeight: 400 });
         }
 
-        function style_CC_3_0() {
+        function style_CC_2_0() {
             return {
-                pane: 'pane_CC_3',
+                pane: 'pane_CC_2',
                 opacity: 1,
                 color: 'rgba(35,35,35,0.6)',
                 dashArray: '',
@@ -314,21 +274,21 @@
                 interactive: false,
             }
         }
-        map.createPane('pane_CC_3');
-        map.getPane('pane_CC_3').style.zIndex = 403;
-        map.getPane('pane_CC_3').style['mix-blend-mode'] = 'normal';
-        var layer_CC_3 = new L.geoJson(json_CC_3, {
+        map.createPane('pane_CC_2');
+        map.getPane('pane_CC_2').style.zIndex = 402;
+        map.getPane('pane_CC_2').style['mix-blend-mode'] = 'normal';
+        var layer_CC_2 = new L.geoJson(json_CC_2, {
             attribution: '',
             interactive: false,
-            dataVar: 'json_CC_3',
-            layerName: 'layer_CC_3',
-            pane: 'pane_CC_3',
-            onEachFeature: pop_CC_3,
-            style: style_CC_3_0,
+            dataVar: 'json_CC_2',
+            layerName: 'layer_CC_2',
+            pane: 'pane_CC_2',
+            onEachFeature: pop_CC_2,
+            style: style_CC_2_0,
         });
-        bounds_group.addLayer(layer_CC_3);
-        map.addLayer(layer_CC_3);
-        function pop_GC_4(feature, layer) {
+        bounds_group.addLayer(layer_CC_2);
+        map.addLayer(layer_CC_2);
+        function pop_GC_3(feature, layer) {
             layer.on({
                 mouseout: function(e) {
                     for (var i in e.target._eventParents) {
@@ -348,9 +308,9 @@
 			layer.bindPopup(content, { maxHeight: 400 });
         }
 
-        function style_GC_4_0() {
+        function style_GC_3_0() {
             return {
-                pane: 'pane_GC_4',
+                pane: 'pane_GC_3',
                 opacity: 1,
                 color: 'rgba(35,35,35,0.0)',
                 dashArray: '',
@@ -363,21 +323,21 @@
                 interactive: false,
             }
         }
-        map.createPane('pane_GC_4');
-        map.getPane('pane_GC_4').style.zIndex = 404;
-        map.getPane('pane_GC_4').style['mix-blend-mode'] = 'normal';
-        var layer_GC_4 = new L.geoJson(json_GC_4, {
+        map.createPane('pane_GC_3');
+        map.getPane('pane_GC_3').style.zIndex = 403;
+        map.getPane('pane_GC_3').style['mix-blend-mode'] = 'normal';
+        var layer_GC_3 = new L.geoJson(json_GC_3, {
             attribution: '',
             interactive: false,
-            dataVar: 'json_GC_4',
-            layerName: 'layer_GC_4',
-            pane: 'pane_GC_4',
-            onEachFeature: pop_GC_4,
-            style: style_GC_4_0,
+            dataVar: 'json_GC_3',
+            layerName: 'layer_GC_3',
+            pane: 'pane_GC_3',
+            onEachFeature: pop_GC_3,
+            style: style_GC_3_0,
         });
-        bounds_group.addLayer(layer_GC_4);
-        map.addLayer(layer_GC_4);
-        function pop_NB_5(feature, layer) {
+        bounds_group.addLayer(layer_GC_3);
+        map.addLayer(layer_GC_3);
+        function pop_NB_4(feature, layer) {
             layer.on({
                 mouseout: function(e) {
                     for (var i in e.target._eventParents) {
@@ -397,9 +357,9 @@
 			layer.bindPopup(content, { maxHeight: 400 });
         }
 
-        function style_NB_5_0() {
+        function style_NB_4_0() {
             return {
-                pane: 'pane_NB_5',
+                pane: 'pane_NB_4',
                 opacity: 1,
                 color: 'rgba(35,35,35,0.0)',
                 dashArray: '',
@@ -412,21 +372,21 @@
                 interactive: false,
             }
         }
-        map.createPane('pane_NB_5');
-        map.getPane('pane_NB_5').style.zIndex = 405;
-        map.getPane('pane_NB_5').style['mix-blend-mode'] = 'normal';
-        var layer_NB_5 = new L.geoJson(json_NB_5, {
+        map.createPane('pane_NB_4');
+        map.getPane('pane_NB_4').style.zIndex = 404;
+        map.getPane('pane_NB_4').style['mix-blend-mode'] = 'normal';
+        var layer_NB_4 = new L.geoJson(json_NB_4, {
             attribution: '',
             interactive: false,
-            dataVar: 'json_NB_5',
-            layerName: 'layer_NB_5',
-            pane: 'pane_NB_5',
-            onEachFeature: pop_NB_5,
-            style: style_NB_5_0,
+            dataVar: 'json_NB_4',
+            layerName: 'layer_NB_4',
+            pane: 'pane_NB_4',
+            onEachFeature: pop_NB_4,
+            style: style_NB_4_0,
         });
-        bounds_group.addLayer(layer_NB_5);
-        map.addLayer(layer_NB_5);
-        function pop_R20_6(feature, layer) {
+        bounds_group.addLayer(layer_NB_4);
+        map.addLayer(layer_NB_4);
+        function pop_R20_5(feature, layer) {
             layer.on({
                 mouseout: function(e) {
                     for (var i in e.target._eventParents) {
@@ -446,9 +406,9 @@
 			layer.bindPopup(content, { maxHeight: 400 });
         }
 
-        function style_R20_6_0() {
+        function style_R20_5_0() {
             return {
-                pane: 'pane_R20_6',
+                pane: 'pane_R20_5',
                 opacity: 1,
                 color: 'rgba(35,35,35,0.0)',
                 dashArray: '',
@@ -461,21 +421,21 @@
                 interactive: false,
             }
         }
-        map.createPane('pane_R20_6');
-        map.getPane('pane_R20_6').style.zIndex = 406;
-        map.getPane('pane_R20_6').style['mix-blend-mode'] = 'normal';
-        var layer_R20_6 = new L.geoJson(json_R20_6, {
+        map.createPane('pane_R20_5');
+        map.getPane('pane_R20_5').style.zIndex = 405;
+        map.getPane('pane_R20_5').style['mix-blend-mode'] = 'normal';
+        var layer_R20_5 = new L.geoJson(json_R20_5, {
             attribution: '',
             interactive: false,
-            dataVar: 'json_R20_6',
-            layerName: 'layer_R20_6',
-            pane: 'pane_R20_6',
-            onEachFeature: pop_R20_6,
-            style: style_R20_6_0,
+            dataVar: 'json_R20_5',
+            layerName: 'layer_R20_5',
+            pane: 'pane_R20_5',
+            onEachFeature: pop_R20_5,
+            style: style_R20_5_0,
         });
-        bounds_group.addLayer(layer_R20_6);
-        map.addLayer(layer_R20_6);
-        function pop_R10_7(feature, layer) {
+        bounds_group.addLayer(layer_R20_5);
+        map.addLayer(layer_R20_5);
+        function pop_R10_6(feature, layer) {
             layer.on({
                 mouseout: function(e) {
                     for (var i in e.target._eventParents) {
@@ -495,9 +455,9 @@
 			layer.bindPopup(content, { maxHeight: 400 });
         }
 
-        function style_R10_7_0() {
+        function style_R10_6_0() {
             return {
-                pane: 'pane_R10_7',
+                pane: 'pane_R10_6',
                 opacity: 1,
                 color: 'rgba(35,35,35,0.0)',
                 dashArray: '',
@@ -510,21 +470,21 @@
                 interactive: false,
             }
         }
-        map.createPane('pane_R10_7');
-        map.getPane('pane_R10_7').style.zIndex = 407;
-        map.getPane('pane_R10_7').style['mix-blend-mode'] = 'normal';
-        var layer_R10_7 = new L.geoJson(json_R10_7, {
+        map.createPane('pane_R10_6');
+        map.getPane('pane_R10_6').style.zIndex = 406;
+        map.getPane('pane_R10_6').style['mix-blend-mode'] = 'normal';
+        var layer_R10_6 = new L.geoJson(json_R10_6, {
             attribution: '',
             interactive: false,
-            dataVar: 'json_R10_7',
-            layerName: 'layer_R10_7',
-            pane: 'pane_R10_7',
-            onEachFeature: pop_R10_7,
-            style: style_R10_7_0,
+            dataVar: 'json_R10_6',
+            layerName: 'layer_R10_6',
+            pane: 'pane_R10_6',
+            onEachFeature: pop_R10_6,
+            style: style_R10_6_0,
         });
-        bounds_group.addLayer(layer_R10_7);
-        map.addLayer(layer_R10_7);
-        function pop_R6_8(feature, layer) {
+        bounds_group.addLayer(layer_R10_6);
+        map.addLayer(layer_R10_6);
+        function pop_R6_7(feature, layer) {
             layer.on({
                 mouseout: function(e) {
                     for (var i in e.target._eventParents) {
@@ -544,9 +504,9 @@
 			layer.bindPopup(content, { maxHeight: 400 });
         }
 
-        function style_R6_8_0() {
+        function style_R6_7_0() {
             return {
-                pane: 'pane_R6_8',
+                pane: 'pane_R6_7',
                 opacity: 1,
                 color: 'rgba(35,35,35,0.0)',
                 dashArray: '',
@@ -559,21 +519,21 @@
                 interactive: false,
             }
         }
-        map.createPane('pane_R6_8');
-        map.getPane('pane_R6_8').style.zIndex = 408;
-        map.getPane('pane_R6_8').style['mix-blend-mode'] = 'normal';
-        var layer_R6_8 = new L.geoJson(json_R6_8, {
+        map.createPane('pane_R6_7');
+        map.getPane('pane_R6_7').style.zIndex = 407;
+        map.getPane('pane_R6_7').style['mix-blend-mode'] = 'normal';
+        var layer_R6_7 = new L.geoJson(json_R6_7, {
             attribution: '',
             interactive: false,
-            dataVar: 'json_R6_8',
-            layerName: 'layer_R6_8',
-            pane: 'pane_R6_8',
-            onEachFeature: pop_R6_8,
-            style: style_R6_8_0,
+            dataVar: 'json_R6_7',
+            layerName: 'layer_R6_7',
+            pane: 'pane_R6_7',
+            onEachFeature: pop_R6_7,
+            style: style_R6_7_0,
         });
-        bounds_group.addLayer(layer_R6_8);
-        map.addLayer(layer_R6_8);
-        function pop_ConditionalZoning_9(feature, layer) {
+        bounds_group.addLayer(layer_R6_7);
+        map.addLayer(layer_R6_7);
+        function pop_ConditionalZoning_8(feature, layer) {
             layer.on({
                 mouseout: function(e) {
                     for (var i in e.target._eventParents) {
@@ -586,8 +546,7 @@
             });
             var popupContent = '<table>\
                     <tr>\
-                        <th scope="row">Conditional Zoning Agreement:</th>\
-                        <td>' + (feature.properties['Conditional Zoning Agreement:'] !== null ? '<img src="images/' + String(feature.properties['Conditional Zoning Agreement:']).replace(/[\\/:]/g, '_').trim().replace(/'/g, '\'').replace(/"/g, '&quot;') + '">' : '') + '</td>\
+                        <td colspan="2">' + (feature.properties['fid'] !== null ? autolinker.link(String(feature.properties['fid']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
                     </tr>\
                 </table>';
             var content = removeEmptyRowsFromPopupContent(popupContent, feature);
@@ -597,52 +556,70 @@
 			layer.bindPopup(content, { maxHeight: 400 });
         }
 
-        function style_ConditionalZoning_9_0() {
-            return {
-                pane: 'pane_ConditionalZoning_9',
-                opacity: 1,
-                color: 'rgba(228,26,28,1.0)',
-                dashArray: '',
-                lineCap: 'round',
-                lineJoin: 'round',
-                weight: 6.0,
-                fillOpacity: 0,
-                interactive: true,
-            }
-        }
-        var pattern_ConditionalZoning_9_1 = new L.StripePattern({
-            weight: 0.5,
-            spaceWeight: 5.0,
-            color: '#e41a1c',
+        var pattern_ConditionalZoning_8_0 = new L.StripePattern({
+            weight: 0.3,
+            spaceWeight: 2.0,
+            color: '#e31a1c',
             opacity: 1.0,
             spaceOpacity: 0,
             angle: 315
         });
-        pattern_ConditionalZoning_9_1.addTo(map);
-        function style_ConditionalZoning_9_1() {
+        pattern_ConditionalZoning_8_0.addTo(map);
+        function style_ConditionalZoning_8_0() {
             return {
-                pane: 'pane_ConditionalZoning_9',
+                pane: 'pane_ConditionalZoning_8',
                 stroke: false,
                 fillOpacity: 1,
-                fillPattern: pattern_ConditionalZoning_9_1,
+                fillPattern: pattern_ConditionalZoning_8_0,
                 interactive: true,
             }
         }
-        map.createPane('pane_ConditionalZoning_9');
-        map.getPane('pane_ConditionalZoning_9').style.zIndex = 409;
-        map.getPane('pane_ConditionalZoning_9').style['mix-blend-mode'] = 'overlay';
-        var layer_ConditionalZoning_9 = new L.geoJson.multiStyle(json_ConditionalZoning_9, {
+        var pattern_ConditionalZoning_8_1 = new L.StripePattern({
+            weight: 0.3,
+            spaceWeight: 2.0,
+            color: '#e31a1c',
+            opacity: 1.0,
+            spaceOpacity: 0,
+            angle: 225
+        });
+        pattern_ConditionalZoning_8_1.addTo(map);
+        function style_ConditionalZoning_8_1() {
+            return {
+                pane: 'pane_ConditionalZoning_8',
+                stroke: false,
+                fillOpacity: 1,
+                fillPattern: pattern_ConditionalZoning_8_1,
+                interactive: true,
+            }
+        }
+        function style_ConditionalZoning_8_2() {
+            return {
+                pane: 'pane_ConditionalZoning_8',
+                opacity: 1,
+                color: 'rgba(227,26,28,1.0)',
+                dashArray: '',
+                lineCap: 'round',
+                lineJoin: 'round',
+                weight: 3.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+        }
+        map.createPane('pane_ConditionalZoning_8');
+        map.getPane('pane_ConditionalZoning_8').style.zIndex = 408;
+        map.getPane('pane_ConditionalZoning_8').style['mix-blend-mode'] = 'normal';
+        var layer_ConditionalZoning_8 = new L.geoJson.multiStyle(json_ConditionalZoning_8, {
             attribution: '',
             interactive: true,
-            dataVar: 'json_ConditionalZoning_9',
-            layerName: 'layer_ConditionalZoning_9',
-            pane: 'pane_ConditionalZoning_9',
-            onEachFeature: pop_ConditionalZoning_9,
-            styles: [style_ConditionalZoning_9_0,style_ConditionalZoning_9_1,]
+            dataVar: 'json_ConditionalZoning_8',
+            layerName: 'layer_ConditionalZoning_8',
+            pane: 'pane_ConditionalZoning_8',
+            onEachFeature: pop_ConditionalZoning_8,
+            styles: [style_ConditionalZoning_8_0,style_ConditionalZoning_8_1,style_ConditionalZoning_8_2,]
         });
-        bounds_group.addLayer(layer_ConditionalZoning_9);
-        map.addLayer(layer_ConditionalZoning_9);
-        function pop_Structures_10(feature, layer) {
+        bounds_group.addLayer(layer_ConditionalZoning_8);
+        map.addLayer(layer_ConditionalZoning_8);
+        function pop_Structures_9(feature, layer) {
             layer.on({
                 mouseout: function(e) {
                     for (var i in e.target._eventParents) {
@@ -662,9 +639,9 @@
 			layer.bindPopup(content, { maxHeight: 400 });
         }
 
-        function style_Structures_10_0() {
+        function style_Structures_9_0() {
             return {
-                pane: 'pane_Structures_10',
+                pane: 'pane_Structures_9',
                 opacity: 1,
                 color: 'rgba(0,0,0,1.0)',
                 dashArray: '',
@@ -677,21 +654,21 @@
                 interactive: false,
             }
         }
-        map.createPane('pane_Structures_10');
-        map.getPane('pane_Structures_10').style.zIndex = 410;
-        map.getPane('pane_Structures_10').style['mix-blend-mode'] = 'normal';
-        var layer_Structures_10 = new L.geoJson(json_Structures_10, {
+        map.createPane('pane_Structures_9');
+        map.getPane('pane_Structures_9').style.zIndex = 409;
+        map.getPane('pane_Structures_9').style['mix-blend-mode'] = 'normal';
+        var layer_Structures_9 = new L.geoJson(json_Structures_9, {
             attribution: '',
             interactive: false,
-            dataVar: 'json_Structures_10',
-            layerName: 'layer_Structures_10',
-            pane: 'pane_Structures_10',
-            onEachFeature: pop_Structures_10,
-            style: style_Structures_10_0,
+            dataVar: 'json_Structures_9',
+            layerName: 'layer_Structures_9',
+            pane: 'pane_Structures_9',
+            onEachFeature: pop_Structures_9,
+            style: style_Structures_9_0,
         });
-        bounds_group.addLayer(layer_Structures_10);
-        map.addLayer(layer_Structures_10);
-        function pop_Roads_11(feature, layer) {
+        bounds_group.addLayer(layer_Structures_9);
+        map.addLayer(layer_Structures_9);
+        function pop_Roads_10(feature, layer) {
             layer.on({
                 mouseout: function(e) {
                     for (var i in e.target._eventParents) {
@@ -714,9 +691,9 @@
 			layer.bindPopup(content, { maxHeight: 400 });
         }
 
-        function style_Roads_11_0() {
+        function style_Roads_10_0() {
             return {
-                pane: 'pane_Roads_11',
+                pane: 'pane_Roads_10',
                 opacity: 1,
                 color: 'rgba(31,120,180,1.0)',
                 dashArray: '',
@@ -727,72 +704,21 @@
                 interactive: false,
             }
         }
-        map.createPane('pane_Roads_11');
-        map.getPane('pane_Roads_11').style.zIndex = 411;
-        map.getPane('pane_Roads_11').style['mix-blend-mode'] = 'normal';
-        var layer_Roads_11 = new L.geoJson(json_Roads_11, {
+        map.createPane('pane_Roads_10');
+        map.getPane('pane_Roads_10').style.zIndex = 410;
+        map.getPane('pane_Roads_10').style['mix-blend-mode'] = 'normal';
+        var layer_Roads_10 = new L.geoJson(json_Roads_10, {
             attribution: '',
             interactive: false,
-            dataVar: 'json_Roads_11',
-            layerName: 'layer_Roads_11',
-            pane: 'pane_Roads_11',
-            onEachFeature: pop_Roads_11,
-            style: style_Roads_11_0,
+            dataVar: 'json_Roads_10',
+            layerName: 'layer_Roads_10',
+            pane: 'pane_Roads_10',
+            onEachFeature: pop_Roads_10,
+            style: style_Roads_10_0,
         });
-        bounds_group.addLayer(layer_Roads_11);
-        map.addLayer(layer_Roads_11);
-        function getFeaturePropertyValue(feature, possibleNames, requiredWords) {
-            if (!feature || !feature.properties) {
-                return '';
-            }
-
-            for (var i = 0; i < possibleNames.length; i++) {
-                var key = possibleNames[i];
-                if (Object.prototype.hasOwnProperty.call(feature.properties, key)) {
-                    var value = feature.properties[key];
-                    if (value !== null && value !== undefined && String(value).trim() !== '') {
-                        return value;
-                    }
-                }
-            }
-
-            // Fallback: find the field even if qgis2web shortened/altered the name.
-            var keys = Object.keys(feature.properties);
-            for (var k = 0; k < keys.length; k++) {
-                var normalizedKey = keys[k].toLowerCase().replace(/[^a-z0-9]/g, '');
-                var foundAllWords = true;
-
-                for (var w = 0; w < requiredWords.length; w++) {
-                    if (normalizedKey.indexOf(requiredWords[w]) === -1) {
-                        foundAllWords = false;
-                        break;
-                    }
-                }
-
-                if (foundAllWords) {
-                    var fallbackValue = feature.properties[keys[k]];
-                    if (fallbackValue !== null && fallbackValue !== undefined && String(fallbackValue).trim() !== '') {
-                        return fallbackValue;
-                    }
-                }
-            }
-
-            return '';
-        }
-
-        function popupRow(label, value) {
-            if (value === null || value === undefined || String(value).trim() === '') {
-                return '';
-            }
-
-            return '<tr>\
-                        <th scope="row">' + label + '</th>\
-                        <td>' + autolinker.link(String(value).toLocaleString()) + '</td>\
-                    </tr>\
-';
-        }
-
-        function pop_Parcels_12(feature, layer) {
+        bounds_group.addLayer(layer_Roads_10);
+        map.addLayer(layer_Roads_10);
+        function pop_Parcels_11(feature, layer) {
             layer.on({
                 mouseout: function(e) {
                     for (var i in e.target._eventParents) {
@@ -804,43 +730,49 @@
                 mouseover: highlightFeature,
             });
 
-            var conditionalZoningAgreement = getFeaturePropertyValue(
-                feature,
-                [
-                    'CZ_AGREE',
-                    'Conditional Zoning Agreement',
-                    'Conditional Zoning Agreement:',
-                    'CONDITIONALZONINGAGREEMENT',
-                    'CONDITIONAL_ZONING_AGREEMENT',
-                    'CONDITIONALZONING',
-                    'CONDZONINGAGREEMENT',
-                    'COND_ZONING_AGREEMENT',
-                    'CZAGREE'
-                ],
-                ['conditional', 'zoning', 'agreement']
-            );
+            var czaValue = feature.properties['CZA_AGREEMENT'];
 
             var popupContent = '<table>\
-' +
-                popupRow('Address:', feature.properties['SITEADDRESS']) +
-                popupRow('Parcel Number:', feature.properties['PARCELNUMBER']) +
-                popupRow('Zoning District:', feature.properties['ZONING']) +
-                popupRow('Conditional Zoning Agreement:', conditionalZoningAgreement) +
-                popupRow('Table of Permitted Uses:', feature.properties['PERMITTEDUSES']) +
-                popupRow('Dimensional Requirements:', feature.properties['DIMENSIONALREQ']) +
-                popupRow('Zoning Questions and Inquiries:', feature.properties['ZONINGINQUIRIES']) +
-                '</table>';
-
+                    <tr>\
+                        <th scope="row">Address:</th>\
+                        <td>' + (hasPopupValue(feature.properties['SITEADDRESS']) ? popupLinkValue(feature.properties['SITEADDRESS']) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Parcel Number:</th>\
+                        <td>' + (hasPopupValue(feature.properties['PARCELNUMBER']) ? popupLinkValue(feature.properties['PARCELNUMBER']) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Zoning District:</th>\
+                        <td>' + (hasPopupValue(feature.properties['ZONING']) ? popupLinkValue(feature.properties['ZONING']) : '') + '</td>\
+                    </tr>' +
+                    (hasPopupValue(czaValue) ? '\
+                    <tr>\
+                        <th scope="row">Conditional Zoning Agreement:</th>\
+                        <td>' + popupLinkValue(czaValue) + '</td>\
+                    </tr>' : '') + '\
+                    <tr>\
+                        <th scope="row">Table of Permitted Uses:</th>\
+                        <td>' + (hasPopupValue(feature.properties['PERMITTEDUSES']) ? popupLinkValue(feature.properties['PERMITTEDUSES']) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Dimensional Requirements:</th>\
+                        <td>' + (hasPopupValue(feature.properties['DIMENSIONALREQ']) ? popupLinkValue(feature.properties['DIMENSIONALREQ']) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Zoning Questions and Inquiries:</th>\
+                        <td>' + (hasPopupValue(feature.properties['ZONINGINQUIRIES']) ? popupLinkValue(feature.properties['ZONINGINQUIRIES']) : '') + '</td>\
+                    </tr>\
+                </table>';
             var content = removeEmptyRowsFromPopupContent(popupContent, feature);
-            layer.on('popupopen', function(e) {
-                addClassToPopupIfMedia(content, e.popup);
-            });
-            layer.bindPopup(content, { maxHeight: 400 });
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
         }
 
-        function style_Parcels_12_0() {
+        function style_Parcels_11_0() {
             return {
-                pane: 'pane_Parcels_12',
+                pane: 'pane_Parcels_11',
                 opacity: 1,
                 color: 'rgba(35,35,35,1.0)',
                 dashArray: '',
@@ -853,33 +785,32 @@
                 interactive: true,
             }
         }
-        map.createPane('pane_Parcels_12');
-        map.getPane('pane_Parcels_12').style.zIndex = 412;
-        map.getPane('pane_Parcels_12').style['mix-blend-mode'] = 'normal';
-        var layer_Parcels_12 = new L.geoJson(json_Parcels_12, {
+        map.createPane('pane_Parcels_11');
+        map.getPane('pane_Parcels_11').style.zIndex = 411;
+        map.getPane('pane_Parcels_11').style['mix-blend-mode'] = 'normal';
+        var layer_Parcels_11 = new L.geoJson(json_Parcels_11, {
             attribution: '',
             interactive: true,
-            dataVar: 'json_Parcels_12',
-            layerName: 'layer_Parcels_12',
-            pane: 'pane_Parcels_12',
-            onEachFeature: pop_Parcels_12,
-            style: style_Parcels_12_0,
+            dataVar: 'json_Parcels_11',
+            layerName: 'layer_Parcels_11',
+            pane: 'pane_Parcels_11',
+            onEachFeature: pop_Parcels_11,
+            style: style_Parcels_11_0,
         });
-        bounds_group.addLayer(layer_Parcels_12);
-        map.addLayer(layer_Parcels_12);
+        bounds_group.addLayer(layer_Parcels_11);
+        map.addLayer(layer_Parcels_11);
         var overlaysTree = [
-            {label: '<img src="legend/Parcels_12.png" /> Parcels', layer: layer_Parcels_12},
-            {label: '<img src="legend/Roads_11.png" /> Roads', layer: layer_Roads_11},
-            {label: '<img src="legend/Structures_10.png" /> Structures', layer: layer_Structures_10},
-            {label: '<img src="legend/ConditionalZoning_9.png" /> Conditional Zoning', layer: layer_ConditionalZoning_9},
-            {label: '<img src="legend/R6_8.png" /> R-6', layer: layer_R6_8},
-            {label: '<img src="legend/R10_7.png" /> R-10', layer: layer_R10_7},
-            {label: '<img src="legend/R20_6.png" /> R-20', layer: layer_R20_6},
-            {label: '<img src="legend/NB_5.png" /> NB', layer: layer_NB_5},
-            {label: '<img src="legend/GC_4.png" /> GC', layer: layer_GC_4},
-            {label: '<img src="legend/CC_3.png" /> CC', layer: layer_CC_3},
-            {label: '<img src="legend/HCI_2.png" /> HC-I', layer: layer_HCI_2},
-            {label: '<img src="legend/TownLimits_1.png" /> Town Limits', layer: layer_TownLimits_1},
+            {label: '<img src="legend/Parcels_11.png" /> Parcels', layer: layer_Parcels_11},
+            {label: '<img src="legend/Roads_10.png" /> Roads', layer: layer_Roads_10},
+            {label: '<img src="legend/Structures_9.png" /> Structures', layer: layer_Structures_9},
+            {label: '<img src="legend/ConditionalZoning_8.png" /> Conditional Zoning', layer: layer_ConditionalZoning_8},
+            {label: '<img src="legend/R6_7.png" /> R-6', layer: layer_R6_7},
+            {label: '<img src="legend/R10_6.png" /> R-10', layer: layer_R10_6},
+            {label: '<img src="legend/R20_5.png" /> R-20', layer: layer_R20_5},
+            {label: '<img src="legend/NB_4.png" /> NB', layer: layer_NB_4},
+            {label: '<img src="legend/GC_3.png" /> GC', layer: layer_GC_3},
+            {label: '<img src="legend/CC_2.png" /> CC', layer: layer_CC_2},
+            {label: '<img src="legend/HCI_1.png" /> HC-I', layer: layer_HCI_1},
             {label: "Google Satellite", layer: layer_GoogleSatellite_0},]
         var lay = L.control.layers.tree(null, overlaysTree,{
             //namedToggle: true,
@@ -942,7 +873,6 @@
             }  
         });       
         setBounds();
-
         // --- Road labels that sit along the road centerline ---
         // This replaces the qgis2web tooltip labels. It picks the best straight segment
         // of each road feature, rotates the text to match that segment, then flips it
@@ -965,7 +895,35 @@
             return paths;
         }
 
-        function uprightAngle(angle) {
+        function normalizeAngle(angle) {
+            while (angle <= -180) angle += 360;
+            while (angle > 180) angle -= 360;
+            return angle;
+        }
+
+        function correctedRoadLabelAngle(angle, x, y) {
+            // Working sketch logic:
+            // east/west roads read left-to-right;
+            // north/south roads above the map center use +90;
+            // north/south roads below the map center use -90;
+            // diagonal roads are flipped only when they would read upside down.
+            angle = normalizeAngle(angle);
+
+            var absAngle = Math.abs(angle);
+            var center = map.getSize().divideBy(2);
+
+            // Nearly horizontal: keep it left-to-right.
+            if (absAngle <= 8 || absAngle >= 172) {
+                return 0;
+            }
+
+            // Nearly vertical: use the top/bottom pattern from your sketch.
+            if (Math.abs(absAngle - 90) <= 8) {
+                return y < center.y ? 90 : -90;
+            }
+
+            // General case: keep label readable. This prevents upside-down text
+            // while still letting diagonal roads keep their actual angle.
             if (angle > 90) angle -= 180;
             if (angle < -90) angle += 180;
             return angle;
@@ -989,7 +947,7 @@
                         best = {
                             x: (a.x + b.x) / 2,
                             y: (a.y + b.y) / 2,
-                            angle: uprightAngle(Math.atan2(dy, dx) * 180 / Math.PI),
+                            rawAngle: Math.atan2(dy, dx) * 180 / Math.PI,
                             len: len
                         };
                     }
@@ -1039,11 +997,11 @@
                 el.remove();
             });
 
-            if (!map.hasLayer(layer_Roads_11)) return;
+            if (!map.hasLayer(layer_Roads_10)) return;
 
-            layer_Roads_11.eachLayer(function(layer) {
+            layer_Roads_10.eachLayer(function(layer) {
                 var labelText = layer.feature && layer.feature.properties ? layer.feature.properties['Road_Label'] : null;
-                if (labelText === null || labelText === undefined || String(labelText).trim() === '') return;
+                if (!hasPopupValue(labelText)) return;
 
                 var pos = bestLabelPosition(layer);
                 if (!pos) return;
@@ -1051,10 +1009,12 @@
                 var div = document.createElement('div');
                 div.className = 'road-label-along-line';
                 div.textContent = String(labelText);
+                var angle = correctedRoadLabelAngle(pos.rawAngle, pos.x, pos.y);
                 div.setAttribute('data-road-length', pos.len);
+                div.setAttribute('data-road-angle', angle);
                 div.style.left = pos.x + 'px';
                 div.style.top = pos.y + 'px';
-                div.style.transform = 'translate(-50%, -50%) rotate(' + pos.angle + 'deg)';
+                div.style.transform = 'translate(-50%, -50%) rotate(' + angle + 'deg)';
                 pane.appendChild(div);
             });
 
@@ -1067,17 +1027,6 @@
         map.on('zoomend moveend layeradd layerremove', function() {
             drawRoadLabels();
         });
-
-        map.addControl(new L.Control.Search({
-            layer: layer_Parcels_12,
-            initial: false,
-            hideMarkerOnCollapse: true,
-            propertyName: 'SITEADDRESS'}));
-        if (typeof url === 'undefined') {
-            document.getElementsByClassName('search-button')[0].className += ' fa fa-binoculars';
-        } else {
-            document.getElementsByClassName('search-button')[1].className += ' fa fa-binoculars';
-        }
         </script>        
     </body>
 </html>
