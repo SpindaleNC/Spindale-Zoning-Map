@@ -802,26 +802,29 @@
         bounds_group.addLayer(layer_Parcels_11);
         map.addLayer(layer_Parcels_11);
 
-layer_Parcels_11.eachLayer(function(layer) {
-    layer.on('click', function(e) {
-        if (selectedParcelLayer && selectedParcelLayer !== layer) {
-            layer_Parcels_11.resetStyle(selectedParcelLayer);
-        }
+        var selectedParcelLayer = null;
 
-        selectedParcelLayer = layer;
+        layer_Parcels_11.eachLayer(function(layer) {
+            layer.on('click', function(e) {
+                if (selectedParcelLayer && selectedParcelLayer !== layer) {
+                    layer_Parcels_11.resetStyle(selectedParcelLayer);
+                }
 
-        selectedParcelLayer.setStyle({
-            color: 'red',
-            weight: 4,
-            opacity: 1,
-            fillOpacity: 0
+                selectedParcelLayer = layer;
+
+                selectedParcelLayer.setStyle({
+                    color: 'red',
+                    weight: 4,
+                    opacity: 1,
+                    fillOpacity: 0
+                });
+
+                if (selectedParcelLayer.bringToFront) {
+                    selectedParcelLayer.bringToFront();
+                }
+            });
         });
 
-        if (selectedParcelLayer.bringToFront) {
-            selectedParcelLayer.bringToFront();
-        }
-    });
-});	
         var overlaysTree = [
             {label: '<img src="legend/Structures_9.png" /> Structures', layer: layer_Structures_9},
             {label: '<img src="legend/ConditionalZoning_8.png" /> Conditional Zoning', layer: layer_ConditionalZoning_8},
@@ -832,7 +835,9 @@ layer_Parcels_11.eachLayer(function(layer) {
             {label: '<img src="legend/GC_3.png" /> GC', layer: layer_GC_3},
             {label: '<img src="legend/CC_2.png" /> CC', layer: layer_CC_2},
             {label: '<img src="legend/HCI_1.png" /> HC-I', layer: layer_HCI_1},
-            {label: "Google Satellite", layer: layer_GoogleSatellite_0},]
+            {label: "Google Satellite", layer: layer_GoogleSatellite_0},
+        ];
+
         var lay = L.control.layers.tree(null, overlaysTree,{
             //namedToggle: true,
             //selectorBack: false,
@@ -842,54 +847,47 @@ layer_Parcels_11.eachLayer(function(layer) {
             //expandAll: 'Expand all',
             collapsed: false, 
         });
+        lay.addTo(map);
+
         var parcelSearchControl = new L.Control.Search({
-    layer: layer_Parcels_11,
-    initial: false,
-    hideMarkerOnCollapse: true,
-    marker: false,
-    propertyName: 'SITEADDRESS'
-});
-
-map.addControl(parcelSearchControl);
-
-var selectedParcelLayer = null;
-
-parcelSearchControl.on('search:locationfound', function(e) {
-    if (selectedParcelLayer) {
-        layer_Parcels_11.resetStyle(selectedParcelLayer);
-    }
-
-    selectedParcelLayer = e.layer;
-
-    selectedParcelLayer.setStyle({
-        color: 'red',
-        weight: 4,
-        opacity: 1,
-        fillOpacity: 0
-    });
-
-    if (selectedParcelLayer.bringToFront) {
-        selectedParcelLayer.bringToFront();
-    }
-
-    if (selectedParcelLayer.getBounds) {
-        map.fitBounds(selectedParcelLayer.getBounds(), {
-            padding: [40, 40],
-            maxZoom: 19
+            layer: layer_Parcels_11,
+            initial: false,
+            hideMarkerOnCollapse: true,
+            marker: false,
+            propertyName: 'SITEADDRESS'
         });
-    }
 
-    if (selectedParcelLayer.openPopup) {
-        selectedParcelLayer.openPopup();
-    }
-});
-    }
+        map.addControl(parcelSearchControl);
 
-    if (searchedParcelLayer.openPopup) {
-        searchedParcelLayer.openPopup();
-    }
-});
-			
+        parcelSearchControl.on('search:locationfound', function(e) {
+            if (selectedParcelLayer) {
+                layer_Parcels_11.resetStyle(selectedParcelLayer);
+            }
+
+            selectedParcelLayer = e.layer;
+
+            selectedParcelLayer.setStyle({
+                color: 'red',
+                weight: 4,
+                opacity: 1,
+                fillOpacity: 0
+            });
+
+            if (selectedParcelLayer.bringToFront) {
+                selectedParcelLayer.bringToFront();
+            }
+
+            if (selectedParcelLayer.getBounds) {
+                map.fitBounds(selectedParcelLayer.getBounds(), {
+                    padding: [40, 40],
+                    maxZoom: 19
+                });
+            }
+
+            if (selectedParcelLayer.openPopup) {
+                selectedParcelLayer.openPopup();
+            }
+        });
 if (typeof url === 'undefined') {
     document.getElementsByClassName('search-button')[0].className += ' fa fa-search';
 } else {
