@@ -801,6 +801,27 @@
         });
         bounds_group.addLayer(layer_Parcels_11);
         map.addLayer(layer_Parcels_11);
+
+layer_Parcels_11.eachLayer(function(layer) {
+    layer.on('click', function(e) {
+        if (selectedParcelLayer && selectedParcelLayer !== layer) {
+            layer_Parcels_11.resetStyle(selectedParcelLayer);
+        }
+
+        selectedParcelLayer = layer;
+
+        selectedParcelLayer.setStyle({
+            color: 'red',
+            weight: 4,
+            opacity: 1,
+            fillOpacity: 0
+        });
+
+        if (selectedParcelLayer.bringToFront) {
+            selectedParcelLayer.bringToFront();
+        }
+    });
+});	
         var overlaysTree = [
             {label: '<img src="legend/Structures_9.png" /> Structures', layer: layer_Structures_9},
             {label: '<img src="legend/ConditionalZoning_8.png" /> Conditional Zoning', layer: layer_ConditionalZoning_8},
@@ -831,31 +852,37 @@
 
 map.addControl(parcelSearchControl);
 
-var searchedParcelLayer = null;
+var selectedParcelLayer = null;
 
 parcelSearchControl.on('search:locationfound', function(e) {
-    if (searchedParcelLayer) {
-        layer_Parcels_11.resetStyle(searchedParcelLayer);
+    if (selectedParcelLayer) {
+        layer_Parcels_11.resetStyle(selectedParcelLayer);
     }
 
-    searchedParcelLayer = e.layer;
+    selectedParcelLayer = e.layer;
 
-    searchedParcelLayer.setStyle({
+    selectedParcelLayer.setStyle({
         color: 'red',
         weight: 4,
         opacity: 1,
         fillOpacity: 0
     });
 
-    if (searchedParcelLayer.bringToFront) {
-        searchedParcelLayer.bringToFront();
+    if (selectedParcelLayer.bringToFront) {
+        selectedParcelLayer.bringToFront();
     }
 
-    if (searchedParcelLayer.getBounds) {
-        map.fitBounds(searchedParcelLayer.getBounds(), {
+    if (selectedParcelLayer.getBounds) {
+        map.fitBounds(selectedParcelLayer.getBounds(), {
             padding: [40, 40],
             maxZoom: 19
         });
+    }
+
+    if (selectedParcelLayer.openPopup) {
+        selectedParcelLayer.openPopup();
+    }
+});
     }
 
     if (searchedParcelLayer.openPopup) {
