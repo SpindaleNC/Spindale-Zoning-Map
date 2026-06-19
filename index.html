@@ -873,38 +873,32 @@
             propertyName: 'SITEADDRESS'
         });
 
-        map.addControl(parcelSearchControl);
+          map.addControl(parcelSearchControl);
 
         parcelSearchControl.on('search:locationfound', function(e) {
-    if (selectedParcelLayer) {
-        layer_Parcels_11.resetStyle(selectedParcelLayer);
-    }
+            map.closePopup();
 
-    selectedParcelLayer = e.layer;
+            setTimeout(function() {
+                if (e.layer) {
+                    e.layer.fire('click');
+                }
 
-    selectedParcelLayer.setStyle({
-        color: 'red',
-        weight: 4,
-        opacity: 1,
-        fillOpacity: 0
-    });
+                if (e.layer && e.layer.getBounds) {
+                    map.fitBounds(e.layer.getBounds(), {
+                        padding: [40, 40],
+                        maxZoom: 19
+                    });
+                }
 
-    if (selectedParcelLayer.getBounds) {
-        map.fitBounds(selectedParcelLayer.getBounds(), {
-            padding: [40, 40],
-            maxZoom: 19
+                map.dragging.enable();
+                map.scrollWheelZoom.enable();
+
+                var searchInputs = document.getElementsByClassName('search-input');
+                for (var i = 0; i < searchInputs.length; i++) {
+                    searchInputs[i].blur();
+                }
+            }, 100);
         });
-    }
-
-    if (selectedParcelLayer.openPopup) {
-        selectedParcelLayer.openPopup();
-    }
-
-    setTimeout(function() {
-        map.dragging.enable();
-        map.scrollWheelZoom.enable();
-    }, 100);
-});
 if (typeof url === 'undefined') {
     document.getElementsByClassName('search-button')[0].className += ' fa fa-search';
 } else {
