@@ -825,6 +825,7 @@
     layer: layer_Parcels_11,
     initial: false,
     hideMarkerOnCollapse: true,
+    marker: false,
     propertyName: 'SITEADDRESS'
 });
 
@@ -839,28 +840,33 @@ parcelSearchControl.on('search:locationfound', function(e) {
 
     searchedParcelLayer = e.layer;
 
-    e.layer.setStyle({
+    searchedParcelLayer.setStyle({
         color: 'red',
         weight: 4,
+        opacity: 1,
         fillOpacity: 0
     });
 
-    if (e.layer.getBounds) {
-        map.fitBounds(e.layer.getBounds(), {
+    if (searchedParcelLayer.bringToFront) {
+        searchedParcelLayer.bringToFront();
+    }
+
+    if (searchedParcelLayer.getBounds) {
+        map.fitBounds(searchedParcelLayer.getBounds(), {
             padding: [40, 40],
             maxZoom: 19
         });
     }
 
-    if (e.layer.openPopup) {
-        e.layer.openPopup();
+    if (searchedParcelLayer.openPopup) {
+        searchedParcelLayer.openPopup();
     }
 });
 			
 if (typeof url === 'undefined') {
-    document.getElementsByClassName('search-button')[0].className += ' fa fa-binoculars';
+    document.getElementsByClassName('search-button')[0].className += ' fa fa-search';
 } else {
-    document.getElementsByClassName('search-button')[1].className += ' fa fa-binoculars';
+    document.getElementsByClassName('search-button')[1].className += ' fa fa-search';
 }	
 		document.addEventListener("DOMContentLoaded", function() {
             // set new Layers List height which considers toggle icon
