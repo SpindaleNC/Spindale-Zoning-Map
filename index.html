@@ -904,19 +904,97 @@
                 }, 500);
             }  
         });       
-        setBounds();
-        var i = 0;
-        layer_Roads_11.eachLayer(function(layer) {
-            var context = {
-                feature: layer.feature,
-                variables: {}
-            };
-            layer.bindTooltip((layer.feature.properties['Road_Label'] !== null?String('<div style="color: #323232; font-size: 7pt; font-weight: bold; font-family: \'Open Sans\', sans-serif;">' + layer.feature.properties['Road_Label']) + '</div>':''), {permanent: true, offset: [-0, -16], className: 'css_Roads_11'});
-            labels.push(layer);
-            totalMarkers += 1;
-              layer.added = true;
-              addLabel(layer, i);
-              i++;
+                setBounds();
+
+        var roadLabelMarkers = [];
+
+        function clearRoadLabels() {
+            for (var i = 0; i < roadLabelMarkers.length; i++) {
+                map.removeLayer(roadLabelMarkers[i]);
+            }
+            roadLabelMarkers = [];
+        }
+
+        function getLongestRoadSegment(latlngs) {
+            var longest = null;
+            var longestLength = 0;
+
+            for (var i = 0; i < latlngs.length - 1; i++) {
+                var p1 = latlngs[i];
+                var p2 = latlngs[i + 1];
+                var length = map.distance(p1, p2);
+
+                if (length > longestLength) {
+                    longestLength = length;
+                    longest = [p1, p2];
+                }
+            }
+
+            return longest;
+        }
+
+        function drawRoadLabels() {
+            clearRoadLabels();
+
+            layer_Roads_11.eachLayer(function(layer) {
+                if (!layer.feature || !layer.feature.properties || !layer.feature.properties['Road_Label']) {
+                    return;
+                }
+
+                var labelText = layer.feature.properties['Road_Label'];
+                var latlngs = layer.getLatLngs();
+
+                if (!latlngs || latlngs.length === 0) {
+                    return;
+                }
+
+                if (Array.isArray(latlngs[0])) {
+                    latlngs = latlngs[0];
+                }
+
+                if (latlngs.length < 2) {
+                    return;
+                }
+
+                var segment = getLongestRoadSegment(latlngs);
+
+                if (!segment) {
+                    return;
+                }
+
+                var p1 = map.latLngToLayerPoint(segment[0]);
+                var p2 = map.latLngToLayerPoint(segment[1]);
+
+                var angle = Math.atan2(p2.y - p1.y, p2.x - p1.x) * 180 / Math.PI;
+
+                if (angle > 90 || angle < -90) {
+                    angle += 180;
+                }
+
+                var midpoint = L.latLng(
+                    (segment[0].lat + segment[1].lat) / 2,
+                    (segment[0].lng + segment[1].lng) / 2
+                );
+
+                var icon = L.divIcon({
+                    className: 'road-label-marker',
+                    html: '<div style="transform: rotate(' + angle + 'deg); transform-origin: center center;">' + labelText + '</div>',
+                    iconSize: null
+                });
+
+                var marker = L.marker(midpoint, {
+                    icon: icon,
+                    interactive: false
+                });
+
+                marker.addTo(map);
+                roadLabelMarkers.push(marker);
+            });
+        }
+
+        map.whenReady(function() {
+            drawRoadLabels();
+            map.on('zoomend moveend', drawRoadLabels);
         });
         var parcelSearchControl = new L.Control.Search({
             layer: layer_Parcels_12,
