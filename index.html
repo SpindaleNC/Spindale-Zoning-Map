@@ -824,8 +824,12 @@
         bounds_group.addLayer(layer_Parcels_11);
         map.addLayer(layer_Parcels_11);
 
-        layer_Parcels_11.eachLayer(function(layer) {
+                layer_Parcels_11.eachLayer(function(layer) {
             layer.on('click', function(e) {
+                if (selectedParcelLayer && selectedParcelLayer._path) {
+                    selectedParcelLayer._path.style.pointerEvents = '';
+                }
+
                 if (selectedParcelLayer && selectedParcelLayer !== layer) {
                     layer_Parcels_11.resetStyle(selectedParcelLayer);
                 }
@@ -838,6 +842,10 @@
                     opacity: 1,
                     fillOpacity: 0
                 });
+
+                if (selectedParcelLayer._path) {
+                    selectedParcelLayer._path.style.pointerEvents = 'none';
+                }
             });
         });
 
