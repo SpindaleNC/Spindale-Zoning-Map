@@ -865,80 +865,134 @@
         });
         lay.addTo(map);
 
-               var parcelSearchControl = new L.Control.Search({
-            layer: layer_Parcels_11,
-            initial: false,
-            hideMarkerOnCollapse: true,
-            marker: false,
-            autoCollapse: true,
-            autoCollapseTime: 200,
-            propertyName: 'SITEADDRESS',
-            moveToLocation: function(latlng, title, map) {
-                return;
-            }
-        });
+        var CustomParcelSearch = L.Control.extend({
+            options: {
+                position: 'topleft'
+            },
 
-        map.addControl(parcelSearchControl);
+            onAdd: function(map) {
+                var container = L.DomUtil.create('div', 'custom-parcel-search leaflet-bar');
+                container.style.background = '#fff';
+                container.style.padding = '4px';
+                container.style.display = 'flex';
+                container.style.alignItems = 'center';
+                container.style.gap = '4px';
+                container.style.boxShadow = '0 1px 5px rgba(0,0,0,0.65)';
 
-        parcelSearchControl.on('search:locationfound', function(e) {
-            if (!e.layer) {
-                return;
-            }
+                var input = L.DomUtil.create('input', '', container);
+                input.type = 'text';
+                input.placeholder = 'Search address';
+                input.style.width = '180px';
+                input.style.height = '24px';
+                input.style.border = '1px solid #999';
+                input.style.padding = '2px 4px';
 
-            map.closePopup();
+                var button = L.DomUtil.create('button', 'fa fa-search', container);
+                button.type = 'button';
+                button.title = 'Search';
+                button.style.width = '30px';
+                button.style.height = '30px';
+                button.style.border = 'none';
+                button.style.background = '#fff';
+                button.style.cursor = 'pointer';
 
-            if (selectedParcelLayer && selectedParcelLayer !== e.layer) {
-                layer_Parcels_11.resetStyle(selectedParcelLayer);
-            }
+                L.DomEvent.disableClickPropagation(container);
+                L.DomEvent.disableScrollPropagation(container);
 
-            selectedParcelLayer = e.layer;
+                function findParcel(searchText) {
+                    var query = String(searchText || '').trim().toLowerCase();
 
-            selectedParcelLayer.setStyle({
-                color: 'red',
-                weight: 4,
-                opacity: 1,
-                fillOpacity: 0
-            });
+                    if (!query) {
+                        return null;
+                    }
 
-            if (selectedParcelLayer.getBounds) {
-                map.fitBounds(selectedParcelLayer.getBounds(), {
-                    padding: [40, 40],
-                    maxZoom: 19
+                    var exactMatch = null;
+                    var partialMatch = null;
+
+                    layer_Parcels_11.eachLayer(function(layer) {
+                        if (!layer.feature || !layer.feature.properties) {
+                            return;
+                        }
+
+                        var address = layer.feature.properties['SITEADDRESS'];
+
+                        if (address === null || address === undefined) {
+                            return;
+                        }
+
+                        var addressText = String(address).trim().toLowerCase();
+
+                        if (addressText === query) {
+                            exactMatch = layer;
+                        }
+
+                        if (!partialMatch && addressText.indexOf(query) !== -1) {
+                            partialMatch = layer;
+                        }
+                    });
+
+                    return exactMatch || partialMatch;
+                }
+
+                function selectParcelFromSearch() {
+                    var foundLayer = findParcel(input.value);
+
+                    if (!foundLayer) {
+                        input.style.border = '2px solid red';
+                        return;
+                    }
+
+                    input.style.border = '1px solid #999';
+                    input.blur();
+
+                    if (selectedParcelLayer && selectedParcelLayer !== foundLayer) {
+                        layer_Parcels_11.resetStyle(selectedParcelLayer);
+                    }
+
+                    selectedParcelLayer = foundLayer;
+
+                    selectedParcelLayer.setStyle({
+                        color: 'red',
+                        weight: 4,
+                        opacity: 1,
+                        fillOpacity: 0
+                    });
+
+                    if (selectedParcelLayer.getBounds) {
+                        map.fitBounds(selectedParcelLayer.getBounds(), {
+                            padding: [40, 40],
+                            maxZoom: 19
+                        });
+                    }
+
+                    map.closePopup();
+
+                    setTimeout(function() {
+                        map.dragging.enable();
+                        map.scrollWheelZoom.enable();
+                        map.doubleClickZoom.enable();
+                        map.boxZoom.enable();
+                        map.keyboard.enable();
+
+                        if (document.activeElement) {
+                            document.activeElement.blur();
+                        }
+                    }, 100);
+                }
+
+                L.DomEvent.on(button, 'click', selectParcelFromSearch);
+
+                L.DomEvent.on(input, 'keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        selectParcelFromSearch();
+                    }
                 });
+
+                return container;
             }
-
-            if (parcelSearchControl.collapse) {
-                parcelSearchControl.collapse();
-            }
-
-            if (parcelSearchControl._markerSearch) {
-                map.removeLayer(parcelSearchControl._markerSearch);
-            }
-
-            setTimeout(function() {
-                map.dragging.enable();
-                map.scrollWheelZoom.enable();
-                map.doubleClickZoom.enable();
-                map.boxZoom.enable();
-                map.keyboard.enable();
-
-                var searchInputs = document.getElementsByClassName('search-input');
-                for (var i = 0; i < searchInputs.length; i++) {
-                    searchInputs[i].blur();
-                }
-
-                if (document.activeElement) {
-                    document.activeElement.blur();
-                }
-
-                map.getContainer().style.cursor = '';
-            }, 300);
         });
-if (typeof url === 'undefined') {
-    document.getElementsByClassName('search-button')[0].className += ' fa fa-search';
-} else {
-    document.getElementsByClassName('search-button')[1].className += ' fa fa-search';
-}	
+
+        map.addControl(new CustomParcelSearch());
 		document.addEventListener("DOMContentLoaded", function() {
             // set new Layers List height which considers toggle icon
             function newLayersListHeight() {
