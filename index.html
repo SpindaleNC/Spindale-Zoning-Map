@@ -865,7 +865,7 @@
         });
         lay.addTo(map);
 
-        var CustomParcelSearch = L.Control.extend({
+                var CustomParcelSearch = L.Control.extend({
             options: {
                 position: 'topleft'
             },
@@ -878,6 +878,7 @@
                 container.style.alignItems = 'center';
                 container.style.gap = '4px';
                 container.style.boxShadow = '0 1px 5px rgba(0,0,0,0.65)';
+                container.style.position = 'relative';
 
                 var input = L.DomUtil.create('input', '', container);
                 input.type = 'text';
@@ -896,8 +897,41 @@
                 button.style.background = '#fff';
                 button.style.cursor = 'pointer';
 
+                var suggestions = L.DomUtil.create('div', 'custom-parcel-search-suggestions', container);
+                suggestions.style.position = 'absolute';
+                suggestions.style.top = '38px';
+                suggestions.style.left = '4px';
+                suggestions.style.width = '220px';
+                suggestions.style.maxHeight = '180px';
+                suggestions.style.overflowY = 'auto';
+                suggestions.style.background = '#fff';
+                suggestions.style.border = '1px solid #999';
+                suggestions.style.boxShadow = '0 2px 6px rgba(0,0,0,0.35)';
+                suggestions.style.zIndex = '9999';
+                suggestions.style.display = 'none';
+
                 L.DomEvent.disableClickPropagation(container);
                 L.DomEvent.disableScrollPropagation(container);
+
+                function getParcelAddress(layer) {
+                    if (!layer.feature || !layer.feature.properties) {
+                        return null;
+                    }
+
+                    var address = layer.feature.properties['SITEADDRESS'];
+
+                    if (address === null || address === undefined) {
+                        return null;
+                    }
+
+                    address = String(address).trim();
+
+                    if (!address || address.toLowerCase() === 'null') {
+                        return null;
+                    }
+
+                    return address;
+                }
 
                 function findParcel(searchText) {
                     var query = String(searchText || '').trim().toLowerCase();
@@ -910,17 +944,13 @@
                     var partialMatch = null;
 
                     layer_Parcels_11.eachLayer(function(layer) {
-                        if (!layer.feature || !layer.feature.properties) {
+                        var address = getParcelAddress(layer);
+
+                        if (!address) {
                             return;
                         }
 
-                        var address = layer.feature.properties['SITEADDRESS'];
-
-                        if (address === null || address === undefined) {
-                            return;
-                        }
-
-                        var addressText = String(address).trim().toLowerCase();
+                        var addressText = address.toLowerCase();
 
                         if (addressText === query) {
                             exactMatch = layer;
@@ -934,15 +964,14 @@
                     return exactMatch || partialMatch;
                 }
 
-                function selectParcelFromSearch() {
-                    var foundLayer = findParcel(input.value);
-
+                function selectParcelLayer(foundLayer) {
                     if (!foundLayer) {
                         input.style.border = '2px solid red';
                         return;
                     }
 
                     input.style.border = '1px solid #999';
+                    suggestions.style.display = 'none';
                     input.blur();
 
                     if (selectedParcelLayer && selectedParcelLayer !== foundLayer) {
@@ -980,12 +1009,94 @@
                     }, 100);
                 }
 
+                function selectParcelFromSearch() {
+                    selectParcelLayer(findParcel(input.value));
+                }
+
+                function updateSuggestions() {
+                    var query = String(input.value || '').trim().toLowerCase();
+                    suggestions.innerHTML = '';
+
+                    if (!query) {
+                        suggestions.style.display = 'none';
+                        return;
+                    }
+
+                    var matches = [];
+
+                    layer_Parcels_11.eachLayer(function(layer) {
+                        var address = getParcelAddress(layer);
+
+                        if (!address) {
+                            return;
+                        }
+
+                        if (address.toLowerCase().indexOf(query) !== -1) {
+                            matches.push({
+                                address: address,
+                                layer: layer
+                            });
+                        }
+                    });
+
+                    matches.sort(function(a, b) {
+                        return a.address.localeCompare(b.address);
+                    });
+
+                    matches = matches.slice(0, 10);
+
+                    if (matches.length === 0) {
+                        suggestions.style.display = 'none';
+                        return;
+                    }
+
+                    for (var i = 0; i < matches.length; i++) {
+                        (function(match) {
+                            var item = L.DomUtil.create('div', '', suggestions);
+                            item.textContent = match.address;
+                            item.style.padding = '5px 8px';
+                            item.style.cursor = 'pointer';
+                            item.style.borderBottom = '1px solid #eee';
+                            item.style.fontSize = '12px';
+                            item.style.color = '#000';
+                            item.style.background = '#fff';
+
+                            item.onmouseover = function() {
+                                item.style.background = '#f2f2f2';
+                            };
+
+                            item.onmouseout = function() {
+                                item.style.background = '#fff';
+                            };
+
+                            L.DomEvent.on(item, 'click', function(e) {
+                                L.DomEvent.stop(e);
+                                input.value = match.address;
+                                selectParcelLayer(match.layer);
+                            });
+                        })(matches[i]);
+                    }
+
+                    suggestions.style.display = 'block';
+                }
+
                 L.DomEvent.on(button, 'click', selectParcelFromSearch);
+                L.DomEvent.on(input, 'input', updateSuggestions);
+                L.DomEvent.on(input, 'focus', updateSuggestions);
 
                 L.DomEvent.on(input, 'keydown', function(e) {
                     if (e.key === 'Enter') {
                         selectParcelFromSearch();
                     }
+
+                    if (e.key === 'Escape') {
+                        suggestions.style.display = 'none';
+                        input.blur();
+                    }
+                });
+
+                L.DomEvent.on(document, 'click', function() {
+                    suggestions.style.display = 'none';
                 });
 
                 return container;
