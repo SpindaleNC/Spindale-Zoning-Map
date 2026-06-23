@@ -824,12 +824,8 @@
         bounds_group.addLayer(layer_Parcels_11);
         map.addLayer(layer_Parcels_11);
 
-                layer_Parcels_11.eachLayer(function(layer) {
+        layer_Parcels_11.eachLayer(function(layer) {
             layer.on('click', function(e) {
-                if (selectedParcelLayer && selectedParcelLayer._path) {
-                    selectedParcelLayer._path.style.pointerEvents = '';
-                }
-
                 if (selectedParcelLayer && selectedParcelLayer !== layer) {
                     layer_Parcels_11.resetStyle(selectedParcelLayer);
                 }
@@ -842,10 +838,6 @@
                     opacity: 1,
                     fillOpacity: 0
                 });
-
-                if (selectedParcelLayer._path) {
-                    selectedParcelLayer._path.style.pointerEvents = 'none';
-                }
             });
         });
 
@@ -873,14 +865,17 @@
         });
         lay.addTo(map);
 
-                var parcelSearchControl = new L.Control.Search({
+               var parcelSearchControl = new L.Control.Search({
             layer: layer_Parcels_11,
             initial: false,
             hideMarkerOnCollapse: true,
             marker: false,
             autoCollapse: true,
-            autoCollapseTime: 300,
-            propertyName: 'SITEADDRESS'
+            autoCollapseTime: 200,
+            propertyName: 'SITEADDRESS',
+            moveToLocation: function(latlng, title, map) {
+                return;
+            }
         });
 
         map.addControl(parcelSearchControl);
@@ -889,6 +884,8 @@
             if (!e.layer) {
                 return;
             }
+
+            map.closePopup();
 
             if (selectedParcelLayer && selectedParcelLayer !== e.layer) {
                 layer_Parcels_11.resetStyle(selectedParcelLayer);
@@ -914,7 +911,9 @@
                 parcelSearchControl.collapse();
             }
 
-            map.closePopup();
+            if (parcelSearchControl._markerSearch) {
+                map.removeLayer(parcelSearchControl._markerSearch);
+            }
 
             setTimeout(function() {
                 map.dragging.enable();
