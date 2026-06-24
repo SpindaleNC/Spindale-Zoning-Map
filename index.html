@@ -191,7 +191,7 @@
             maxNativeZoom: 20
         });
         layer_GoogleSatellite_0;
-        map.addLayer(layer_GoogleSatellite_0);
+        //map.addLayer(layer_GoogleSatellite_0);
         function pop_HCI_1(feature, layer) {
             layer.on({
                 mouseout: function(e) {
@@ -851,7 +851,7 @@
             {label: '<img src="legend/GC_3.png" /> GC', layer: layer_GC_3},
             {label: '<img src="legend/CC_2.png" /> CC', layer: layer_CC_2},
             {label: '<img src="legend/HCI_1.png" /> HC-I', layer: layer_HCI_1},
-            {label: "Google Satellite", layer: layer_GoogleSatellite_0},
+            {label: "Aerial Imagery", layer: layer_GoogleSatellite_0},
         ];
 
         var lay = L.control.layers.tree(null, overlaysTree,{
